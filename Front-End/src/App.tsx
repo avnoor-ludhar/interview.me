@@ -32,7 +32,7 @@ function App(): JSX.Element {
 
   return (
     <>
-      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <div className='absolute left-0 top-0 w-full'>
           <Navbar />
           <Routes>
