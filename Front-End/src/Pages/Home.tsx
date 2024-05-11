@@ -41,7 +41,7 @@ export default function Home(): JSX.Element{
           };
       
           microphone.onstop = () => {
-            console.log("WebSocket connection closed");
+            console.log("Microphone connection closed");
           };
       
           microphone.ondataavailable = (event) => {
