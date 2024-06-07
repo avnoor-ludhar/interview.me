@@ -85,12 +85,18 @@ export default function Home(): JSX.Element{
 
         socketRef.current.addEventListener("message", (event) => {
             const data = JSON.parse(event.data);
-            const transcription: string = data.channel.alternatives[0].transcript
-            if (transcription !== "") {
+            if(data.chunk){
                 setTranscription((transcript) => {
-                    return transcript + transcription;
+                    return transcript + data.chunk;
                 });
-                console.log(transcription);
+            }else{
+                const transcription: string = data.channel.alternatives[0].transcript
+                if (transcription !== "") {
+                    setTranscription((transcript) => {
+                        return transcript + transcription;
+                    });
+                    console.log(transcription);
+                }
             }
         });
     
@@ -109,12 +115,21 @@ export default function Home(): JSX.Element{
             microphoneRef.current?.stop();
             microphoneRef.current = null;
 
-            if(socketRef.current != null){
-                socketRef.current.close(1000);
-                socketRef.current = null;
+            if(socketRef.current !== null){
+                
+                if (socketRef.current.readyState === WebSocket.OPEN) {
+                    socketRef.current.send(JSON.stringify({ type: 'end_deepgram_session' }));
+                }
+                // socketRef.current.close(1000);
+                // socketRef.current = null;
             }
         } else{
-            activateConnection();
+            if(socketRef.current === null){
+                activateConnection();
+            } else{
+                await start(socketRef.current as WebSocket);
+                socketRef.current.send(JSON.stringify({ type: 'start_deepgram_session' }))
+            }
         }
     }
 
