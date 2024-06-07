@@ -1,5 +1,4 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
 import userRoutes from './routes/user.js';
 import mainRoutes from './routes/main.js';
 import dotenv from 'dotenv';
@@ -7,6 +6,7 @@ import cors from 'cors';
 import db from './dbConnection.js';
 import { LiveTranscriptionEvents, createClient } from '@deepgram/sdk';
 import WebSocket, {WebSocketServer} from 'ws';
+import { model, chat, askAndrespond } from './gemini/gemini.js';
 dotenv.config();
 
 const app = express();
@@ -44,6 +44,9 @@ let keepAlive;
 //creates a new web socket server to run on port 8081
 const wss = new WebSocketServer({ port: 8081 });
 
+//current message
+var globalMessage = "";
+
 //this will set up the deepgram web socket connection
 //it will create listeners to events like sending of data opening of the 
 //socket etc
@@ -80,6 +83,7 @@ const setupDeepgram = (ws) =>{
 			console.log("deepgram: transcript received");
 			console.log("socket: transcript sent to client");
 			//send the string representation of the data to the frontend
+			globalMessage += data.channel.alternatives[0].transcript;
 			ws.send(JSON.stringify(data));
 		});
 
@@ -118,33 +122,63 @@ wss.on('connection', (ws)=>{
 	console.log('websocket connected on port 8081...');
 	let deepgram = setupDeepgram(ws);
 
+	const clearDeepgram = ()=>{
+		deepgram.finish();
+		deepgram.removeAllListeners();
+		clearInterval(keepAlive);
+		deepgram = null;
+	}
+
 	ws.on('message', (message) => {
 		console.log("socket: client data received");
 
-		//Checking if the deepgram web socket is open
-		if (deepgram.getReadyState() === 1 /* OPEN */) {
-		  console.log("socket: data sent to deepgram");
-		  //sends data from frontend to the deepgram servers
-		  deepgram.send(message);
-		} else if (deepgram.getReadyState() >= 2 /* 2 = CLOSING, 3 = CLOSED */) {
-		  console.log("socket: data couldn't be sent to deepgram");
-		  console.log("socket: retrying connection to deepgram");
-		  /* Attempt to reopen the Deepgram connection */
-		  deepgram.finish();
-		  deepgram.removeAllListeners();
-		  deepgram = setupDeepgram(socket);
-		} else {
-		  console.log("socket: data couldn't be sent to deepgram");
+		try {
+            const parsedMessage = JSON.parse(message);
+            if (parsedMessage.type === 'end_deepgram_session') {
+                console.log("socket: received end session message");
+                // Perform any cleanup or final actions here before closing the WebSocket
+                clearDeepgram();
+				askAndrespond(model, globalMessage, ws);
+                return;
+            } else if(parsedMessage.type == 'start_deepgram_session'){
+				deepgram = setupDeepgram(ws);
+			}
+        } catch (e){}
+		if(Buffer.isBuffer(message)){
+			//Checking if the deepgram web socket is open
+			if (deepgram !== null && deepgram.getReadyState() === 1 /* OPEN */) {
+				console.log("socket: data sent to deepgram");
+				//sends data from frontend to the deepgram servers
+				deepgram.send(message);
+			} else if (deepgram !== null && deepgram.getReadyState() >= 2 /* 2 = CLOSING, 3 = CLOSED */) {
+				console.log("socket: data couldn't be sent to deepgram");
+				console.log("socket: retrying connection to deepgram");
+				/* Attempt to reopen the Deepgram connection */
+				deepgram.finish();
+				deepgram.removeAllListeners();
+				deepgram = setupDeepgram(socket);
+			} else {
+				console.log("socket: data couldn't be sent to deepgram");
+		  }
+		}else{
+			console.log("boom");
+			const parsedMessage = JSON.parse(message);
+			console.log(parsedMessage);
 		}
+		
 	  })
 
 	//close event for the socket
-	ws.on("close", () => {
+	ws.on("close", async () => {
 		console.log("socket: client disconnected");
+
 		//closes the connection
 		deepgram.finish();
 		//removes all listeners
 		deepgram.removeAllListeners();
+		clearInterval(keepAlive);
 		deepgram = null;
+		
+
 	  });
 });
