@@ -1,10 +1,17 @@
 import { useAppSelector } from "@/redux/store";
 import { useEffect, useState, useRef } from "react";
-import axios, {AxiosError, AxiosResponse} from "axios";
+import { start } from "@/utils/microphone";
 import { FaMicrophoneAlt } from "react-icons/fa";
 
+const isJSON = (str: string) =>{
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
 
-//need to use clearBlobUrl function from the hook when we get data back from the whisper API
 
 export default function Home(): JSX.Element{
     const user = useAppSelector(state=>state.user.user);
@@ -13,89 +20,47 @@ export default function Home(): JSX.Element{
     const socketRef = useRef<null | WebSocket>(null);
     const microphoneRef = useRef<MediaRecorder | null>(null);
 
-    async function getMicrophone(): Promise<null | MediaRecorder> {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          if(!MediaRecorder.isTypeSupported('audio/webm')){
-            return null;
-          }
-          return new MediaRecorder(stream, {
-            //just the type notation: text/plain
-            mimeType: 'audio/webm',
-        });
-        } catch (error) {
-          console.error("Error accessing microphone:", error);
-          throw error;
-        }
-      }
-
-    async function openMicrophone(microphone: MediaRecorder, socket: WebSocket) {
-        //returns a Promise to handle the asynchronous nature of the 
-        //setting up of the microphone
-        return new Promise<void>((resolve) => {
-          microphone.onstart = () => {
-            console.log("WebSocket connection opened");
-            console.log('Microphone active');
-            setIsRecording(true);
-            resolve();
-          };
-      
-          microphone.onstop = () => {
-            console.log("Microphone connection closed");
-          };
-      
-          microphone.ondataavailable = (event) => {
-            if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) {
-              socket.send(event.data);
-            }
-          };
-      
-          microphone.start(1000);
-        });
-      }
-    
-    async function start(socket: WebSocket): Promise<void> {
-    
-        console.log("client: waiting to open microphone");
-
-        if(!microphoneRef.current){
-            try{
-                microphoneRef.current = await getMicrophone();
-                if(microphoneRef.current === null){
-                    return alert('Browser not supported');
-                }
-
-                await openMicrophone(microphoneRef.current, socket);
-            } catch (error) {
-                console.error("Error opening microphone:", error);
-            }
-        } else{
-            microphoneRef.current.stop();
-            microphoneRef.current = null;
-        }
-    }
 
     const activateConnection = async ()=>{
         socketRef.current = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
-
+       
         socketRef.current.addEventListener('open', async () =>{
             console.log("WebSocket connection opened");
-            await start(socketRef.current as WebSocket);
+            // Ensure 'this' is the WebSocket instance
+            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.send(JSON.stringify({ type: 'start_deepgram_session' }));
+            } else {
+                console.error("WebSocket is not open or 'this' is not the WebSocket instance.");
+            }
+
+            await start(socketRef.current as WebSocket, microphoneRef, setIsRecording);
         });
 
         socketRef.current.addEventListener("message", (event) => {
-            const data = JSON.parse(event.data);
-            if(data.chunk){
-                setTranscription((transcript) => {
-                    return transcript + data.chunk;
-                });
-            }else{
-                const transcription: string = data.channel.alternatives[0].transcript
-                if (transcription !== "") {
-                    setTranscription((transcript) => {
-                        return transcript + transcription;
+            if(isJSON(event.data)){
+                const data = JSON.parse(event.data);
+                //gemini second is the transcription from the backend
+                if(data.chunk){
+                    setTranscription((prevTranscript) => {
+                        if(prevTranscript){
+                            return prevTranscript + " " + data.chunk;
+                        }else{
+                            return data.chunk
+                        }
                     });
-                    console.log(transcription);
+                }else{
+                    const transcription: string | undefined = data.transcript;
+                    
+                    if (transcription && transcription !== "") {
+                        setTranscription((prevTranscript) => {
+                            if(prevTranscript){
+                                return prevTranscript + " " + transcription;
+                            }else{
+                                return transcription
+                            }
+                        });
+                        console.log(transcription);
+                    }
                 }
             }
         });
@@ -116,19 +81,16 @@ export default function Home(): JSX.Element{
             microphoneRef.current = null;
 
             if(socketRef.current !== null){
-                
                 if (socketRef.current.readyState === WebSocket.OPEN) {
-                    socketRef.current.send(JSON.stringify({ type: 'end_deepgram_session' }));
-                }
-                // socketRef.current.close(1000);
-                // socketRef.current = null;
+                    const endMessage = JSON.stringify({type: 'end_deepgram_session'});
+                    console.log("Sending end session message:", endMessage);
+                    socketRef.current.send(endMessage);
+                } 
+                socketRef.current = null;
             }
         } else{
             if(socketRef.current === null){
-                activateConnection();
-            } else{
-                await start(socketRef.current as WebSocket);
-                socketRef.current.send(JSON.stringify({ type: 'start_deepgram_session' }))
+                await activateConnection();
             }
         }
     }
