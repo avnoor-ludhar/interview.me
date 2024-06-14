@@ -2,7 +2,7 @@ import './App.css';
 import { ThemeProvider } from "@/components/theme-provider";
 import Login from './Pages/Login';
 import Landing from './Pages/Landing';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/navbar';
 import SignUp from './Pages/SignUp';
 import Home from './Pages/Home';
@@ -20,6 +20,7 @@ type userType = {
 function App(): JSX.Element {
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.user.user);
+  const navigate = useNavigate();
 
   useEffect(()=>{
     const user: string | null = localStorage.getItem("user");
@@ -27,6 +28,7 @@ function App(): JSX.Element {
         const userJSON: userType = JSON.parse(user);
         console.log(userJSON);
         dispatch(addUser(userJSON));
+        navigate('/home');
     }
   }, [])
 
