@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 
 app.use("/api/user", userRoutes);
 
-app.use('/api/home', mainRoutes);
+app.use('/api/interview', mainRoutes);
 
 app.listen(process.env.PORT, ()=>{
     console.log("listening on port 8080");
@@ -57,7 +57,7 @@ const setupDeepgram = (ws) =>{
 		language: "en",
 		punctuate: true,
 		smart_format: true,
-		model: "nova-2",		
+		model: "nova-2",
 		interim_results: true,
 		utterance_end_ms: 1500
 	});
@@ -74,7 +74,7 @@ const setupDeepgram = (ws) =>{
 		deepgram.keepAlive();
 	}, 10 * 1000);
 
-	//adds a listener to the deepgram object to add listeners on the successfuk
+	//adds a listener to the deepgram object to add listeners on the successful
 	//opening of the websocket connection
 	deepgram.addListener(LiveTranscriptionEvents.Open, async () =>{
 		console.log('deepgram connected');		
@@ -110,7 +110,7 @@ const setupDeepgram = (ws) =>{
 			console.log(data);
 			askAndrespond(chat, globalMessage, ws, "message");
 			globalMessage = "";
-		})
+		});
 
 		//handle close by closing the websocket connection and 
 		//clearing the keepAlive interval function
