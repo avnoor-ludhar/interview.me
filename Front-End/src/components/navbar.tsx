@@ -32,9 +32,8 @@ export default function Navbar(): JSX.Element{
 
     return(
         <div>
-            <nav className='w-full flex flex-row justify-between items-center px-5 py-6 font-Montserrat'>
+            <nav className='w-full flex flex-row justify-between items-center px-10 py-6 font-Montserrat'>
                 <Link to="/" className="flex flex-row items-center">
-                    <FaCamera className="scale-[1.9] mx-5"/>
                     <p className="text-2xl font-bold leading-10">
                         InterviewME
                     </p>
@@ -88,7 +87,7 @@ export default function Navbar(): JSX.Element{
                     </NavigationMenu>
                     { user ? (<Button onClick={handleClick} variant = "ghost" className="text-lg h-[40px] hidden md:flex ">Log Out</Button>) : (<><Link to='/login'><Button variant = "ghost" className="text-lg h-[40px] hidden md:flex ">Log In</Button></Link><Link to="/signup"><Button variant = "outline" className="dark:text-white text-md mx-5 rounded-md h-[40px] hover:opacity-90 md:w-[84px] hidden md:flex">Sign up</Button></Link></>)}
                     
-                    <ModeToggle />
+                    {/* <ModeToggle /> */}
                 </div>
             </nav>
         </div>

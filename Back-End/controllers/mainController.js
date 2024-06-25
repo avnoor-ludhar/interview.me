@@ -9,7 +9,7 @@ const dataFunc = async (req, res)=>{
 }
 
 const textToSpeechDeepgram = async (req, res) =>{
-  const {text, model } = req.body;
+  const {text, chunkNumber, model } = req.body;
 
   try{
     const response = await deepgram.speak.request({ text }, { model });
@@ -23,9 +23,16 @@ const textToSpeechDeepgram = async (req, res) =>{
     // Combine all chunks into a single Buffer
     const completeAudioBuffer = Buffer.concat(audioData);
 
+    // Encode the audio buffer to Base64
+    const audioBase64 = completeAudioBuffer.toString('base64');
+
     // Set appropriate headers and send the complete audio data
-    res.setHeader('Content-Type', 'audio/wav');
-    res.send(completeAudioBuffer);
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.json({
+      audio: audioBase64,
+      chunkNumber: chunkNumber
+    });
   }catch(e){
     console.error(e);
     res.status(500).send("Internal Server Error");
