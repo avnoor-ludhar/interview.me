@@ -5,27 +5,20 @@ import { FaMicrophoneAlt } from "react-icons/fa";
 import axios, { AxiosResponse } from "axios";
 import { useNavigate } from "react-router-dom";
 import { models } from "@/assets/models";
+import { speaker, bodyTTS, dataFromGemini, audioDataFromTTS } from "@/utils/types";
+/*
+Custom hooks allow us to store stateful logic in them. This means each
+hook has a independant section compared to every other
+call of the same hook. If hooks do not use 
+any other hooks declare them as a normal function.
 
-type speaker = {
-    speaker: string,
-    text: string
-};
+PURE FUNCTIONS:
+- make sure there is a complete understanding of the output based on the input
+- if we want to mutate a variable it must be defined in the scope of the function
+since each component renders asynchronously. Try to express logic with rendering alone
+useEffect should be last option.
+*/
 
-type bodyTTS = {
-    text: string,
-    model: string,
-    chunkNumber: number
-};
-
-type dataFromGemini = {
-    chunk: string,
-    chunkNumber: number
-};
-
-type audioDataFromTTS = {
-    audio: string, 
-    chunkNumber: number
-};
 
 const isJSON = (str: string) =>{
     try {
