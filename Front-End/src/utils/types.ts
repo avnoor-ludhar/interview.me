@@ -19,4 +19,11 @@ type audioDataFromTTS = {
     chunkNumber: number
 };
 
-export type {speaker, bodyTTS, dataFromGemini, audioDataFromTTS};
+type UseWebSocketHook = {
+    socketRef: React.MutableRefObject<WebSocket | null>,
+    isConnected: boolean,
+    disconnect: () => void,
+    connect: (url: string) => void
+}
+
+export type {speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook};
