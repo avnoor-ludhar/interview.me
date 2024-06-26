@@ -10,7 +10,11 @@ const dataFunc = async (req, res)=>{
 
 const textToSpeechDeepgram = async (req, res) =>{
   const {text, chunkNumber, model } = req.body;
-
+  // Validate text input
+  if (!text || typeof text !== 'string' || text.trim() === '') {
+      return res.status(400).send("Invalid text input");
+  }
+  
   try{
     const response = await deepgram.speak.request({ text }, { model });
     const stream = await response.getStream();
@@ -29,13 +33,16 @@ const textToSpeechDeepgram = async (req, res) =>{
     // Set appropriate headers and send the complete audio data
     
     res.setHeader('Content-Type', 'application/json');
-    res.json({
+    return res.json({
       audio: audioBase64,
       chunkNumber: chunkNumber
     });
   }catch(e){
     console.error(e);
-    res.status(500).send("Internal Server Error");
+    if(e.status == 400){
+      return res.status(e.status).send("Text data could not be processed");
+    }
+    return res.status(500).send("Internal Server Error");
   }
 }
 
