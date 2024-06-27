@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/redux/store";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FaMicrophoneAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { speaker, UseWebSocketHook } from "@/utils/types";
@@ -27,7 +27,7 @@ export default function Home(): JSX.Element{
     const microphoneRef = useRef<MediaRecorder | null>(null);
     const user = useAppSelector(state=>state.user.user);
     const navigate = useNavigate();
-    const { addToQueue, setFirstChunkFlag } = useAudioQueue();
+    const { addToQueue, setFirstChunkFlag, setAudioQueue, setCurrentAudio } = useAudioQueue();
     if(!user){
         navigate('/');
     }
@@ -65,7 +65,23 @@ export default function Home(): JSX.Element{
                 : { ...prev, text: prev.text + " " + transcription };
 
             if (prev.speaker === "Gemini") {
-                setFirstChunkFlag(false)
+                setFirstChunkFlag(false);
+
+                setAudioQueue((queue) => {
+                    if(queue.length > 0 && socketRef.current != null){
+                        socketRef?.current.send(JSON.stringify({ type: 'Gemini_Interupted', chunkText: queue[0].chunkText }));
+
+                        setCurrentAudio((audio)=>{
+                            if(audio){
+                                audio.src = ""
+                            }
+                            return null
+                        });
+                        return [];
+                    }
+                    return queue;
+                })
+
                 setChatLog((log) => {
                     if(log.length != 0 && log[log.length - 1].speaker == "Gemini"){
                         return [...log];
@@ -120,7 +136,6 @@ export default function Home(): JSX.Element{
             <p>{user?.email}</p>
             <div className="flex flex-col items-center">
                 <button className="mt-20 scale-[3] bg-red-600 p-1 rounded-full hover:opacity-80" onClick={handleRecord}><FaMicrophoneAlt /></button>
-                {/* <audio controls autoPlay loop className="mt-10"/> */}
             </div>
         </div>)
 }

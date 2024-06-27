@@ -21,7 +21,7 @@ export const convertTextToSpeech = async (data: dataFromGemini, user: User | nul
         console.log(audioUrl)
         console.log(dataFromTTS.chunkNumber)
         
-        addToQueue({chunkNumber: dataFromTTS.chunkNumber, audio: audioUrl});
+        addToQueue({chunkNumber: dataFromTTS.chunkNumber, audio: audioUrl, chunkText: data.chunk});
     } catch (error) {
         console.error('Error converting text to speech:', error);
     }

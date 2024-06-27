@@ -25,7 +25,7 @@ const useAudioQueue = () => {
             //makes an HTML audio object out of it to play the sound
             const audio = new Audio(nextAudioUrl.audio);
             
-            // this is an event listener to modify the queu on the ending of an audio sample
+            // this is an event listener to modify the queue on the ending of an audio sample
             audio.addEventListener('ended', () => {
                 setAudioQueue((prevQueue) => prevQueue.slice(1));
                 setCurrentAudio(null);
@@ -36,19 +36,15 @@ const useAudioQueue = () => {
             audio.play();
         }
     }
-
-    // Effect to play the next audio when the queue changes
-    // we add the playNextAudio to our dependency array to ensure 
-    // that the version of the function is the re-rendered function
-    // since useCallback memoizes the function
+    
     useEffect(() => {
         //checks if the currentAudio is null and we have some audio in our queue
         if (!currentAudio && audioQueue.length > 0 && firstChunkFlag) {
             playNextAudio();
         } 
-    }, [audioQueue, currentAudio]);
+    }, [audioQueue, currentAudio, firstChunkFlag]);
 
-    return { audioQueue, addToQueue, setFirstChunkFlag };
+    return { audioQueue, addToQueue, setFirstChunkFlag, setAudioQueue, setCurrentAudio };
 };
 
 export default useAudioQueue;
