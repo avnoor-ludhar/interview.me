@@ -16,7 +16,8 @@ type dataFromGemini = {
 
 type audioDataFromTTS = {
     audio: string, 
-    chunkNumber: number
+    chunkNumber: number,
+    chunkText: string
 };
 
 type UseWebSocketHook = {

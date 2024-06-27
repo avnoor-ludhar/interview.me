@@ -43,6 +43,7 @@ wss.on('connection', (ws) => {
     ws.globalMessage = "";
     ws.chunkCount = 0;
 	ws.keepAlive;
+    ws.interupted;
 
     let deepgram = setupDeepgram(ws, askAndrespond, chat);
 
@@ -80,13 +81,14 @@ wss.on('connection', (ws) => {
                 } else if (parsedMessage.type == 'start_deepgram_session') {
                     const introMessage = await askAndrespond(chat, ws.globalMessage, ws, "intro", ws.chunkCount);
                     ws.send(introMessage);
+                } else if(parsedMessage.type == 'Gemini_Interupted'){
+                    ws.interupted = parsedMessage.chunkText;
                 }
             } catch (e) {
                 console.log(e.message);
             }
         } else if (Buffer.isBuffer(message)) {
             if (deepgram !== null && deepgram.getReadyState() === 1) {
-                console.log("socket: data sent to deepgram");
                 deepgram.send(message);
             } else if (deepgram !== null && deepgram.getReadyState() >= 2) {
                 console.log("socket: data couldn't be sent to deepgram");

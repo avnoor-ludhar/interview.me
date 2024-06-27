@@ -28,10 +28,7 @@ export const setupDeepgram = (ws, askAndrespond, chat) => {
         console.log('deepgram connected');
 
         deepgram.addListener(LiveTranscriptionEvents.Transcript, async (data) => {
-            console.log("deepgram: packet received");
-            console.log("deepgram: transcript received");
-            console.log("socket: transcript sent to client");
-
+            
             if (data.is_final) {
                 let bestPrediction = 0;
                 let foundIndex = 0;
@@ -49,7 +46,7 @@ export const setupDeepgram = (ws, askAndrespond, chat) => {
 
         deepgram.addListener(LiveTranscriptionEvents.UtteranceEnd, async (data) => {
             console.log(data);
-            askAndrespond(chat, ws.globalMessage, ws, "message", ws.chunkCount);
+            askAndrespond(chat, ws.globalMessage, ws, "message", ws.chunkCount, ws.interupted);
             ws.globalMessage = "";
         });
 
