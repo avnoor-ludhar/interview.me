@@ -28,6 +28,7 @@ export default function Home(): JSX.Element{
     const user = useAppSelector(state=>state.user.user);
     const navigate = useNavigate();
     const { addToQueue, setFirstChunkFlag, setAudioQueue, setCurrentAudio } = useAudioQueue();
+    console.log(user);
     if(!user){
         navigate('/');
     }
@@ -120,6 +121,15 @@ export default function Home(): JSX.Element{
             connect(import.meta.env.VITE_WEBSOCKET_URL);
         }
     }
+
+    useEffect(() => {
+        return () => {
+            if (microphoneRef.current) {
+                microphoneRef.current.stop();
+                microphoneRef.current = null;
+            }
+        };
+    }, []);
 
     
     return (
