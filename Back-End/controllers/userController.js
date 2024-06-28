@@ -128,4 +128,19 @@ const logoutUser = async (req, res) =>{
     res.status(200).json({message: 'Logged out successfully'})
 }
 
-export {loginUser, registerUser, logoutUser};
+const sessionCheck = (req, res) =>{
+    const token = req.cookies.accessToken;
+
+    if(!token){
+        res.status(401).json({ error: 'No token found'});
+    }
+
+    try{
+        const user = jwt.verify(token, process.env.SECRET);
+        res.status(200).json({ email: user.email });
+    } catch(err){
+        res.status(401).json({ error: 'Invalid token' });
+    }
+}
+
+export {loginUser, registerUser, logoutUser, sessionCheck};
