@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import { useAppDispatch } from './redux/store';
 import { addUser } from "@/redux/features/userSlice";
 import { useAppSelector } from './redux/store';
+import api from './lib/axios';
 
 type userType = {
   email: string,
@@ -22,15 +23,19 @@ function App(): JSX.Element {
   const user = useAppSelector(state => state.user.user);
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    const user: string | null = localStorage.getItem("user");
-    if(user){
-        const userJSON: userType = JSON.parse(user);
-        console.log(userJSON);
-        dispatch(addUser(userJSON));
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await api.get('/api/user/session');
+        const user: userType = response.data;
+        dispatch(addUser(user));
         navigate('/home');
-    }
-  }, [])
+      } catch (error) {
+        console.error('No active session');
+      }
+    };
+    checkSession();
+  }, []);
 
   return (
     <>
