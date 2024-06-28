@@ -15,6 +15,7 @@ import { useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/redux/store";
 import {addUser} from '@/redux/features/userSlice';
+import api from "@/lib/axios";
 
 type ButtonClickEvent = React.SyntheticEvent<HTMLButtonElement>;
   
@@ -25,8 +26,7 @@ type formData = {
 }
 
 type responseData = {
-    email: string,
-    token: string
+    email: string
 }
 
 function SignUp(): JSX.Element {
@@ -45,13 +45,10 @@ function SignUp(): JSX.Element {
 
                 const formInput:formData = {email: formResponse[0], password: formResponse[1], passwordConfirm: formResponse[2]};
 
-                const url:string = `${import.meta.env.VITE_REACT_APP_API_URL}/api/user/register`;
-
-                const APIResponse  = await axios.post(url, formInput);
+                const APIResponse  = await api.post('/api/user/register', formInput);
                 const data: responseData = APIResponse?.data;
 
-                localStorage.setItem('user', JSON.stringify(data));
-                dispatch(addUser({email: data.email, token: data.token}))
+                dispatch(addUser({ email: data.email, token: '' })); // No need to store token in Redux
                 setEmail('');
                 setPassword('');
                 setPasswordConfirm('');

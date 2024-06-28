@@ -3,13 +3,12 @@ import db from '../dbConnection.js';
 
 const requireAuth = async (req, res, next)=>{
     //verify authentication
-    const { authorization } = req.headers;
+    const token = req.cookies.accessToken;
 
-    if(!authorization){
+
+    if(!token){
         return res.status(401).json({error: 'Authorization token required'})
     }
-    //comes back as Bearer token
-    const token = authorization.split(' ')[1];
 
     try{
         //signed with our secret key so we can unravel same way

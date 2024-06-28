@@ -15,6 +15,7 @@ import axios, {AxiosError, AxiosResponse} from "axios";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/redux/store";
 import { addUser } from "@/redux/features/userSlice";
+import api from "@/lib/axios";
 
 type ButtonClickEvent = React.SyntheticEvent<HTMLButtonElement>;
   
@@ -24,8 +25,7 @@ type formData = {
 }
 
 type responseData = {
-    email: string,
-    token: string
+    email: string
 }
 
 function Login(): JSX.Element {
@@ -43,13 +43,10 @@ function Login(): JSX.Element {
     
                 const formInput:formData = {email: data[0], password: data[1]};
 
-                const url:string = `${import.meta.env.VITE_REACT_APP_API_URL}/api/user/login`;
-
-                const response: AxiosResponse = await axios.post(url, formInput);
+                const response: AxiosResponse = await api.post('/api/user/login', formInput);
                 const dataFromAPI: responseData = response.data;
                 
-                localStorage.setItem('user', JSON.stringify(dataFromAPI));
-                dispatch(addUser({email: dataFromAPI.email, token: dataFromAPI.token}));
+                dispatch(addUser({email: dataFromAPI.email, token: ''}));// no need to store the token in redux
                 setEmail('');
                 setPassword('');
                 setError(null);
@@ -58,7 +55,7 @@ function Login(): JSX.Element {
         } catch(err: unknown){
             if(axios.isAxiosError(err)){
                 const newError: AxiosError = err as AxiosError;
-                setError(newError.response?.data?.error ?? 'Unknown error');
+                setError(newError.response?.data?.error ?? 'Server is down');
             }else{
                 console.log("idk");
             }

@@ -75,7 +75,17 @@ const loginUser = async (req, res)=>{
         }
 
         const token = createToken(user.rows[0].id);
-        res.status(200).json({token: token, email: email});
+
+        //secure forces the cookie is only sent via HTTPS. Secure attribute ensures that the cookie
+        //is only sent to the server when a request is made using HTTPS.
+        //sameSite just allows the cookie only to be sent from one site
+        res.cookie('accessToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict'
+        });
+
+        res.status(200).json({ email: email});
 
     } catch(error){
         if(error instanceof Error){
@@ -94,12 +104,28 @@ const registerUser = async (req, res)=>{
 
         const user = await signUpQuery(email, password, passwordConfirm);
         const token = createToken(user.id);
+        res.cookie('accessToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict'
+        });
 
-        res.status(200).json({token: token, email: email});
+        res.status(200).json({email: email});
     } catch(error){
         res.status(401).json({ error: error.message });
     }
     
 }
 
-export {loginUser, registerUser};
+const logoutUser = async (req, res) =>{
+    res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        path: '/',
+    });
+
+    res.status(200).json({message: 'Logged out successfully'})
+}
+
+export {loginUser, registerUser, logoutUser};

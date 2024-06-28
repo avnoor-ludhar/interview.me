@@ -57,17 +57,21 @@ const useWebSocket = (handleWebSocketMessage: (data: any) => void, microphoneRef
                 console.log("Sending end session message:", endMessage);
                 socketRef.current.send(endMessage);
             }
+            socketRef.current.close();
         }
     };
 
     useEffect(() => {
         return () => {
             disconnect();
+            if(microphoneRef.current){
+                microphoneRef.current.stop();
+                microphoneRef.current = null;
+            }
         };
     }, []);
 
     return { connect, disconnect, isConnected, socketRef };
 };
-
 
 export default useWebSocket;
