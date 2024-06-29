@@ -27,7 +27,7 @@ function App(): JSX.Element {
     const checkSession = async () => {
       try {
         const response = await api.get('/api/user/session');
-        const user: userType = response.data;
+        const user: userType = {token: '', email: response.data.email};
         dispatch(addUser(user));
         navigate('/home');
       } catch (error) {
