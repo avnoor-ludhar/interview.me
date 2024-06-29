@@ -58,6 +58,7 @@ function SignUp(): JSX.Element {
         } catch(err: unknown){
             if(axios.isAxiosError(err)){
                 const newError: AxiosError = err as AxiosError;
+                console.log(newError.response?.data);
                 setError(newError.response?.data?.error ?? 'Unknown error');
             }else{
                 console.log("idk");

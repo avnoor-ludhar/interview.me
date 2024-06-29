@@ -17,8 +17,6 @@ import { useAppDispatch } from "@/redux/store";
 import { addUser } from "@/redux/features/userSlice";
 import api from "@/lib/axios";
 
-type ButtonClickEvent = React.SyntheticEvent<HTMLButtonElement>;
-  
 type formData = {
     email: string,
     password: string
@@ -35,30 +33,31 @@ function Login(): JSX.Element {
     const navigate: NavigateFunction = useNavigate();
     const dispatch = useAppDispatch();
 
-    const handleClick = async (e:ButtonClickEvent) =>{
+    const handleClick = async () =>{
         try{
-            if(e.target instanceof HTMLButtonElement){
-                const eventData: HTMLButtonElement = e.target as HTMLButtonElement;
-                const data: string[] = eventData?.value.split(",");
-    
-                const formInput:formData = {email: data[0], password: data[1]};
+            const formInput:formData = {email: email, password: password};
 
-                const response: AxiosResponse = await api.post('/api/user/login', formInput);
-                const dataFromAPI: responseData = response.data;
-                
-                dispatch(addUser({email: dataFromAPI.email, token: ''}));// no need to store the token in redux
-                setEmail('');
-                setPassword('');
-                setError(null);
-                navigate('/home')
-            }
+            const response: AxiosResponse = await api.post('/api/user/login', formInput);
+            const dataFromAPI: responseData = response.data;
+            
+            dispatch(addUser({email: dataFromAPI.email, token: ''}));// no need to store the token in redux
+            setEmail('');
+            setPassword('');
+            setError(null);
+            navigate('/home');
         } catch(err: unknown){
             if(axios.isAxiosError(err)){
                 const newError: AxiosError = err as AxiosError;
-                setError(newError.response?.data?.error ?? 'Server is down');
+                setError(newError.response?.data?.error ?? 'Unknown error');
             }else{
                 console.log("idk");
             }
+        }
+    }
+    
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) =>{
+        if(e.key == 'Enter'){
+            handleClick();
         }
     }
 
@@ -77,19 +76,19 @@ function Login(): JSX.Element {
                         <Label htmlFor="email" >
                             Email
                         </Label>
-                        <Input id="email" type="email" placeholder="m@example.com" onChange={e => setEmail(e.target.value)} value={email}/>
+                        <Input id="email" type="email" placeholder="m@example.com" onChange={e => setEmail(e.target.value)} onKeyDown={handleKeyDown} value={email}/>
                     </div>
                     <div className="flex flex-col items-start space-y-2">
                         <Label htmlFor="password" >
                             Password
                         </Label>
-                        <Input id="password" onChange={e => setPassword(e.target.value)} type="password" value={password}/>
+                        <Input id="password" onChange={e => setPassword(e.target.value)} onKeyDown={handleKeyDown} type="password" value={password}/>
                     </div>
                 </div>
                 
             </CardContent>
             <CardFooter>
-                <Button className="w-full" onClick={handleClick} value={[email, password]}>Login</Button> 
+                <Button className="w-full" onClick={handleClick}>Login</Button> 
             </CardFooter>
         </Card>
         {error && <AlertDestructive error={error}/>}
