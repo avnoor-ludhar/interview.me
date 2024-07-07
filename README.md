@@ -1,2 +1,3 @@
 # interview.me
-New interview application for universities to get into universities and ace interviews.
+Real time interview application to allow users to practice interview skills in a real-time environment. Currently in development but all source files that are completely finished are linked.
+
