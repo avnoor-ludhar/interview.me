@@ -2,7 +2,7 @@ import pg from 'pg';
 import dotenv from 'dotenv';
 dotenv.config()
 
-//error could be here
+//db connecion
 const db = new pg.Client({
     user: "postgres",
     host: "localhost",

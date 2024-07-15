@@ -9,7 +9,6 @@ export const useLogout = (): LogoutHook =>{
     const dispatch = useAppDispatch();
 
     const logout = () =>{
-
         localStorage.removeItem("user");
         dispatch(removeUser());
     }

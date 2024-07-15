@@ -37,6 +37,7 @@ function SignUp(): JSX.Element {
     const navigate: NavigateFunction = useNavigate();
     const dispatch = useAppDispatch();
 
+    //just sends an API reques tto the backend to get the JWT and stores it in local storage and the redux store
     const handleClick = async (e:ButtonClickEvent) =>{
         try{
             if(e.target instanceof HTMLButtonElement){

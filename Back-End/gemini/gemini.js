@@ -2,8 +2,10 @@ import {GoogleGenerativeAI} from '@google/generative-ai';
 import dotenv from 'dotenv';
 dotenv.config();
 
+//creates a connection to the Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_APIKEY);
 export const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+//sets up a chat so that the model can rememebr history of the conversation
 export const chat = model.startChat({
     history: [],
     generationConfig: {
@@ -11,6 +13,7 @@ export const chat = model.startChat({
     },
   });
 
+//creates a basic askAndrespond function which dependant on the message type changes the prompting to the AI
 export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, interupted){
     try{
         if(messageEvent === "intro"){
@@ -22,9 +25,11 @@ export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, int
         }
         const result = await chat.sendMessageStream(msg);
         let text = '';
+        //waits for each message stream which send chunks as they are available
         for await (const chunk of result.stream) {
             const chunkText = chunk.text();
             const jsonForFrontEnd = {chunkNumber: chunkCount, chunk: chunkText}
+            //sends the data to the front end via the web socket connection
             ws.send(JSON.stringify(jsonForFrontEnd));
             text += chunkText;
             chunkCount += 1
