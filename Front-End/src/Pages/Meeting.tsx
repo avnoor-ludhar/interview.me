@@ -20,7 +20,6 @@ const Meeting = () =>{
                 <div>
                     hello
                 </div>
-                
                 <Chat />
                 <MeetingOptions />
             </div>
