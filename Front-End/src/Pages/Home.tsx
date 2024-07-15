@@ -20,18 +20,25 @@ useEffect should be last option.
 */
 
 export default function Home(): JSX.Element{
+    //entire transcription
     const [currentTranscription, setCurrentTranscription] = useState<string>("");
+    //used to hold the transcription for the current speaker and the transcription
     const [currentSpeaker, setCurrentSpeaker] = useState<speaker>({speaker: "Gemini", text: ""});
+    //chat log of all the messages
     const [chatLog, setChatLog] = useState<speaker[]>([]);
+    //functions to see if the microphone is recording
     const [isRecording, setIsRecording] = useState<boolean>(false);
+    //ref variable to hold the microphone
     const microphoneRef = useRef<MediaRecorder | null>(null);
     const user = useAppSelector(state=>state.user.user);
     const navigate = useNavigate();
+    //custom hook to keep track of all the functionality related to the audio queue
     const { addToQueue, setFirstChunkFlag, setAudioQueue, setCurrentAudio } = useAudioQueue();
     if(!user){
         navigate('/');
     }
 
+    //updates the state if 
     const updateStateWithChunk = (chunk: string) => {
         setCurrentSpeaker((prev) => {
             let newSpeaker = { ...prev, text: prev.text + " " + chunk };
@@ -137,5 +144,6 @@ export default function Home(): JSX.Element{
             <div className="flex flex-col items-center">
                 <button className="mt-20 scale-[3] bg-red-600 p-1 rounded-full hover:opacity-80" onClick={handleRecord}><FaMicrophoneAlt /></button>
             </div>
-        </div>)
+        </div>
+        )
 }

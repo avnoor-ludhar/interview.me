@@ -56,6 +56,7 @@ const useWebSocket = (handleWebSocketMessage: (data: any) => void, microphoneRef
                 const endMessage = JSON.stringify({type: 'end_deepgram_session'});
                 console.log("Sending end session message:", endMessage);
                 socketRef.current.send(endMessage);
+                // socketRef.current.close();
             }
         }
     };

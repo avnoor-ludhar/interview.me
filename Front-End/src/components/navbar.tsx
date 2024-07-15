@@ -1,5 +1,3 @@
-import { ModeToggle } from "@/components/mode-toggle";
-import { FaCamera } from "react-icons/fa";
 import { Button } from "./ui/button";
 import {
     NavigationMenu,
@@ -40,23 +38,6 @@ export default function Navbar(): JSX.Element{
                 </Link>
                 
                 <div className="flex-row items-center justify-evenly hidden lg:flex">
-                    {/*
-                    <NavigationMenu>
-                        <NavigationMenuList>
-                            <NavigationMenuItem>
-                            <NavigationMenuTrigger>Details</NavigationMenuTrigger>
-                            <NavigationMenuContent className="">
-                                <Link to="/login" >
-                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>Deets</NavigationMenuLink>
-                                </Link>
-                                <Link to="/login" >
-                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>something else</NavigationMenuLink>
-                                </Link>
-                            </NavigationMenuContent>
-                            </NavigationMenuItem>
-                        </NavigationMenuList>
-                    </NavigationMenu>
-                    */}
                     <Link to='/login'>
                         <Button variant="link" className="mx-5 text-lg">Packages</Button>
                     </Link>
