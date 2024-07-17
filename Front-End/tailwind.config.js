@@ -76,5 +76,27 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    function ({ addUtilities }) {
+      const newUtilities = {
+        '.triangle-white': {
+          width: '0',
+          height: '0',
+          borderLeft: '20px solid transparent',
+          borderRight: '20px solid transparent',
+          borderBottom: '34.64px solid #ffffff', // Replace with your desired color
+        },
+        '.triangle-purple': {
+          width: '0',
+          height: '0',
+          borderLeft: '20px solid transparent',
+          borderRight: '20px solid transparent',
+          borderBottom: '34.64px solid #7879F1', // Replace with your desired color
+        },
+      };
+
+      addUtilities(newUtilities, ['responsive', 'hover']);
+    },
+  ],
 }

@@ -40,3 +40,8 @@
 .read-the-docs {
   color: #888;
 }
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
