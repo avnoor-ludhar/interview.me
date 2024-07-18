@@ -34,6 +34,7 @@ export default function Meeting(): JSX.Element{
     const [isRecording, setIsRecording] = useState<boolean>(false);
     //ref variable to hold the microphone
     const microphoneRef = useRef<MediaRecorder | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const user = useAppSelector(state=>state.user.user);
     const navigate = useNavigate();
     //custom hook to keep track of all the functionality related to the audio queue
@@ -43,6 +44,15 @@ export default function Meeting(): JSX.Element{
     if(!user){
         navigate('/');
     }
+
+    const toggleMute = ()=>{
+        if(streamRef.current){
+          streamRef.current.getAudioTracks().forEach(track =>{
+            track.enabled = !track.enabled;
+          })
+          setIsRecording((prevState) => !prevState);
+        }
+      }
 
     //updates the state if 
     const updateStateWithChunk = (chunk: string) => {
@@ -121,7 +131,7 @@ export default function Meeting(): JSX.Element{
         }
     }
 
-    const { connect, disconnect, isConnected, socketRef }: UseWebSocketHook = useWebSocket(handleWebSocketMessage, microphoneRef, setIsRecording);
+    const { connect, disconnect, isConnected, socketRef }: UseWebSocketHook = useWebSocket(handleWebSocketMessage, microphoneRef, streamRef, setIsRecording);
 
     const handleRecord = () =>{
         if(isConnected){
@@ -143,7 +153,7 @@ export default function Meeting(): JSX.Element{
                     <img src={AIImg}/>
                 </div>
                 <Chat chatLog={chatLog} currentSpeaker={currentSpeaker}/>
-                <MeetingOptions isConnected={isConnected} handleRecord={handleRecord} stopVideo={stopVideo} startVideo={startVideo} isVideoOn={isVideoOn}/>
+                <MeetingOptions isConnected={isConnected} handleRecord={handleRecord} stopVideo={stopVideo} startVideo={startVideo} isVideoOn={isVideoOn} isRecording={isRecording} toggleMute={toggleMute} />
             </div>
         </div>
         )
