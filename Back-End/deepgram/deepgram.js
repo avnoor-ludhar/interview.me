@@ -24,7 +24,7 @@ export const setupDeepgram = (ws, askAndrespond, chat) => {
         smart_format: true,
         model: "nova-2",
         interim_results: true,
-        utterance_end_ms: 1500
+        utterance_end_ms: 2000
     });
 
     //keepAlive allows the socket to stay awake by sending a flag to deepgram to keep 
