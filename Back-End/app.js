@@ -61,8 +61,6 @@ wss.on('connection', (ws) => {
     //variable that holds the connection to deepgram
     let deepgram = setupDeepgram(ws, askAndrespond, chat);
 
-    
-
     //utility function to handle different messages from the front-end
     const isJSON = (str) => {
         try {
