@@ -27,5 +27,10 @@ type UseWebSocketHook = {
     connect: (url: string) => void
 }
 
+type MediaStreamRecorderType = {
+    MediaRecorder: MediaRecorder | null,
+    MediaStream: MediaStream | null
+}
 
-export type {speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook};
+
+export type {MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook};

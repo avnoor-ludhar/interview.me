@@ -1,13 +1,19 @@
-async function getMicrophone(): Promise<null | MediaRecorder> {
+import { MediaStreamRecorderType } from "./types";
+
+async function getMicrophone(): Promise<null | MediaStreamRecorderType> {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       if(!MediaRecorder.isTypeSupported('audio/webm')){
         return null;
       }
-      return new MediaRecorder(stream, {
-        //just the type notation: text/plain
-        mimeType: 'audio/webm',
-    });
+      const streamAndRecorder: MediaStreamRecorderType = {
+        MediaRecorder: new MediaRecorder(stream, {
+          //just the type notation: text/plain
+          mimeType: 'audio/webm',
+          }),
+        MediaStream: stream
+      }
+      return streamAndRecorder
     } catch (error) {
       console.error("Error accessing microphone:", error);
       throw error;
@@ -39,15 +45,18 @@ async function openMicrophone(microphone: MediaRecorder, socket: WebSocket, setI
     });
   }
 
-export async function start(socket: WebSocket, microphoneRef: React.MutableRefObject<MediaRecorder | null>, setIsRecording: React.Dispatch<React.SetStateAction<boolean>>): Promise<void> {
+export async function start(socket: WebSocket, microphoneRef: React.MutableRefObject<MediaRecorder | null>, streamRef: React.MutableRefObject<MediaStream | null>,  setIsRecording: React.Dispatch<React.SetStateAction<boolean>>): Promise<void> {
     console.log("client: waiting to open microphone");
 
     if(!microphoneRef.current){
         try{
-            microphoneRef.current = await getMicrophone();
-            if(microphoneRef.current === null){
+            const StreamAndRecorder: MediaStreamRecorderType | null = await getMicrophone();
+
+            if(StreamAndRecorder === null || StreamAndRecorder.MediaRecorder == null){
                 return alert('Browser not supported');
             }
+            microphoneRef.current = StreamAndRecorder.MediaRecorder;
+            streamRef.current = StreamAndRecorder.MediaStream;
 
             await openMicrophone(microphoneRef.current, socket, setIsRecording);
         } catch (error) {

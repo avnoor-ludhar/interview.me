@@ -1,25 +1,25 @@
 import { RxCross2 } from "react-icons/rx";
-import { FaMicrophone } from "react-icons/fa";
-import { BsCameraVideoFill } from "react-icons/bs";
-import { BsCameraVideoOffFill } from "react-icons/bs";
+import { FaMicrophone, FaMicrophoneSlash, FaPlay } from "react-icons/fa";
+import { BsCameraVideoFill, BsCameraVideoOffFill} from "react-icons/bs";
 import { Button } from "./ui/button";
-import { FaPlay } from "react-icons/fa";
 
 type MeetingOptionsProps = {
     isConnected: boolean,
     handleRecord: () => void,
     stopVideo: () => void,
     startVideo: () => void,
-    isVideoOn: boolean
+    isVideoOn: boolean,
+    isRecording: boolean,
+    toggleMute: () => void
 }
 
 
-const MeetingOptions = ({isConnected, handleRecord, stopVideo, startVideo, isVideoOn}: MeetingOptionsProps) =>{
+const MeetingOptions = ({isConnected, handleRecord, stopVideo, startVideo, isVideoOn, isRecording, toggleMute}: MeetingOptionsProps) =>{
     return(
         <div className="col-span-2 flex items-center justify-center border-t-[4px] border-[#7879F1]">
             <div className="w-[300px] h-[70%] flex items-center justify-evenly">
-                <Button variant="outline" size="icon" className="rounded-full w-14 h-14">
-                    <FaMicrophone className="rounded-full scale-[2.2] text-white"/>
+                <Button variant="outline" size="icon" className="rounded-full w-14 h-14" onClick={toggleMute}>
+                    {isRecording ? <FaMicrophone className="rounded-full scale-[2.2] text-white"/> : <FaMicrophoneSlash className="rounded-full scale-[2.7] text-white"/>}
                 </Button>
                 
                 <Button variant="outline" size="icon" className="rounded-full w-14 h-14 border-[#7879F1] border-2 hover:bg-[#7879F1] text-white hover:text-black" onClick={handleRecord}>
@@ -27,7 +27,7 @@ const MeetingOptions = ({isConnected, handleRecord, stopVideo, startVideo, isVid
                 </Button>
                 
                 <Button variant="outline" size="icon" className="rounded-full w-14 h-14" onClick={isVideoOn ? stopVideo : startVideo}>
-                    {isVideoOn ? <BsCameraVideoOffFill className="scale-[2] text-white"/> : <BsCameraVideoFill className="scale-[2] text-white"/> }
+                    {isVideoOn ?  <BsCameraVideoFill className="scale-[2] text-white"/> : <BsCameraVideoOffFill className="scale-[2] text-white"/>}
                 </Button>
             </div>
         </div>
