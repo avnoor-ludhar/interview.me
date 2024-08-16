@@ -38,7 +38,7 @@ export default function Meeting(): JSX.Element{
     const user = useAppSelector(state=>state.user.user);
     const navigate = useNavigate();
     //custom hook to keep track of all the functionality related to the audio queue
-    const { addToQueue, setFirstChunkFlag, setAudioQueue, setCurrentAudio } = useAudioQueue();
+    const { addToQueue, setPrevChunkNumber, setAudioQueue, setCurrentAudio } = useAudioQueue();
     const {videoRef, stopVideo, startVideo, isVideoOn} = useVideo();
 
     if(!user){
@@ -88,7 +88,7 @@ export default function Meeting(): JSX.Element{
                 : { ...prev, text: prev.text + " " + transcription };
 
             if (prev.speaker === "Gemini") {
-                setFirstChunkFlag(false);
+                setPrevChunkNumber(-1);
 
                 setAudioQueue((queue) => {
                     if(queue.length > 0 && socketRef.current != null){
