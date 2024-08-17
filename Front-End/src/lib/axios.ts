@@ -11,10 +11,8 @@ api.interceptors.response.use(
     response => response, // Pass through successful responses unchanged
     async error => { // Handle responses that are errors
         const originalRequest = error.config; // Save the original request configuration
-        
         // Check if the error status is 401 (Unauthorized) and if the request hasn't been retried yet
-        if (error.response.status === 401 && !originalRequest.sent) {
-            originalRequest.sent = true; // Mark the request as retried to avoid infinite loop
+        if (error.response.status === 401 && !(originalRequest.url === "/api/user/refresh-token") && !(originalRequest.url === "/api/user/register") && !(originalRequest.url === "/api/user/login")) {
             try {
                 // Attempt to get a new access token using the refresh token
                 const response = await api.get('/api/user/refresh-token');
