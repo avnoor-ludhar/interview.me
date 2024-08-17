@@ -168,8 +168,8 @@ const refreshToken = async (req, res) =>{
 
         if(result.rows.length === 0) return res.sendStatus(403);
 
-        const newAccessToken = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET);
-        const newRefreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET);
+        const newAccessToken = jwt.sign({ id: id }, process.env.ACCESS_TOKEN_SECRET);
+        const newRefreshToken = jwt.sign({ id: id }, process.env.REFRESH_TOKEN_SECRET);
 
         await db.query('UPDATE refresh_tokens SET token = $2 WHERE user_id = $1', [id, newRefreshToken]);
 

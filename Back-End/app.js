@@ -101,7 +101,7 @@ s.on('upgrade', (req, socket, head) =>{
 
     try {
         // Verify the token
-        const user = jwt.verify(token, process.env.SECRET)
+        const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
         req.user = user; // Attach user info to the request
 
         // Proceed with WebSocket upgrade

@@ -28,7 +28,7 @@ export default function Home(): JSX.Element{
     const user = useAppSelector(state=>state.user.user);
     const navigate = useNavigate();
     const { addToQueue, setFirstChunkFlag, setAudioQueue, setCurrentAudio } = useAudioQueue();
-    console.log(user);
+
     if(!user){
         navigate('/');
     }
