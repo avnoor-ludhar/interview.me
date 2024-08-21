@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 const saltRounds = 10;
 
 const createTokens = (id) => {
-    const accessToken = jwt.sign({ id: id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+    const accessToken = jwt.sign({ id: id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1m' });
     const refreshToken = jwt.sign({ id: id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
     return { accessToken, refreshToken };
 }
