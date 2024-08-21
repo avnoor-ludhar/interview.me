@@ -4,7 +4,7 @@ dotenv.config();
 
 //creates a connection to the Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_APIKEY);
-export const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro"});
+export const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 //sets up a chat so that the model can rememebr history of the conversation
 export const chat = model.startChat({
     history: [],
