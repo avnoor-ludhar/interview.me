@@ -9,7 +9,7 @@ import Home from './Pages/Home';
 import Meeting from './Pages/Meeting';
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from './redux/store';
-import { addUser } from "@/redux/features/userSlice";
+import { addUser, removeUser } from "@/redux/features/userSlice";
 import { useAppSelector } from './redux/store';
 import api from './lib/axios';
 
@@ -30,9 +30,9 @@ function App(): JSX.Element {
         const response = await api.get('/api/user/session');
         const user: userType = {token: '', email: response.data.email};
         dispatch(addUser(user));
-        navigate('/home');
       } catch (error) {
         console.error('No active session');
+        dispatch(removeUser());
       }
       setIsUserChecked(true);
     };

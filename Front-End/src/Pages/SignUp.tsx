@@ -13,7 +13,7 @@ import { Label } from "@radix-ui/react-label";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
-import { useAppDispatch } from "@/redux/store";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
 import {addUser} from '@/redux/features/userSlice';
 import api from "@/lib/axios";
   
@@ -35,6 +35,11 @@ function SignUp(): JSX.Element {
     const [error, setError] = useState<string | null>(null);
     const navigate: NavigateFunction = useNavigate();
     const dispatch = useAppDispatch();
+    const user = useAppSelector(state => state.user.user);
+
+    if(user){
+        navigate('/home');
+    }
 
     const handleClick = async () =>{
         try{

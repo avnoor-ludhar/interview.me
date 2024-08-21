@@ -162,9 +162,10 @@ wss.on('connection', (ws) => {
                 if (parsedMessage.type === 'end_deepgram_session') {
                     console.log("socket: received end session message");
                     clearDeepgram(ws, deepgram);
-                    askAndrespond(chat, ws.globalMessage, ws, "end", ws.chunkCount);
+                    // askAndrespond(chat, ws.globalMessage, ws, "end", ws.chunkCount);
                     ws.globalMessage = "";
                     ws.chunkCount = 0;
+                    ws.close();
                     return;
                 } else if (parsedMessage.type == 'start_deepgram_session') {
                     //starts connection

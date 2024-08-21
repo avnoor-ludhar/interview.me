@@ -3,8 +3,17 @@
 import { Button } from "@/components/ui/button";
 import { TypeAnimation } from "react-type-animation";
 import { Input } from "@/components/ui/input";
+import { useAppSelector } from "@/redux/store";
+import { useNavigate } from "react-router-dom";
 
 export default function Landing(): JSX.Element {
+  const user = useAppSelector(state => state.user.user);
+  const navigate = useNavigate();
+
+  if(user){
+    navigate('/home');
+  }
+  
   return (
     <>
       <div className="flex flex-col font-Work-Sans">
