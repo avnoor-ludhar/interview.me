@@ -31,9 +31,8 @@ const useAudioQueue = (currentSpeaker: speaker, setKillSocket: React.Dispatch<Re
                 setAudioQueue((prevQueue) => {
                     if(prevQueue.length == 1){
                         const textToCheckEnd = currentSpeaker.text.toLowerCase();
-                        if(textToCheckEnd.includes("have a great day!")){
+                        if(textToCheckEnd.includes("have a great day") || textToCheckEnd.includes("have a good day")){
                             setKillSocket(true);
-                            console.log("boom");
                         }
                     }
                     return prevQueue.slice(1)

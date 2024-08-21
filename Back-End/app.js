@@ -161,8 +161,7 @@ wss.on('connection', (ws) => {
                 //kills connectin with deepgram
                 if (parsedMessage.type === 'end_deepgram_session') {
                     console.log("socket: received end session message");
-                    clearDeepgram(ws, deepgram);
-                    // askAndrespond(chat, ws.globalMessage, ws, "end", ws.chunkCount);
+                    //write to db
                     ws.globalMessage = "";
                     ws.chunkCount = 0;
                     ws.close();

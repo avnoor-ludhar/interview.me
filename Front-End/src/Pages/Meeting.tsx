@@ -162,6 +162,7 @@ export default function Meeting(): JSX.Element{
     
             // Disconnect the WebSocket if it's still connected
             if (isConnected) {
+                socketRef.current?.send(JSON.stringify({ type: 'end_deepgram_session', chatLog: [...chatLog, currentSpeaker] }))
                 disconnect();
             }
     
