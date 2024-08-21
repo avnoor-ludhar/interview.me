@@ -62,16 +62,6 @@ const useWebSocket = (handleWebSocketMessage: (data: any) => void, microphoneRef
         }
     };
 
-    useEffect(() => {
-        return () => {
-            disconnect();
-            if(microphoneRef.current){
-                microphoneRef.current.stop();
-                microphoneRef.current = null;
-            }
-        };
-    }, []);
-
     return { connect, disconnect, isConnected, socketRef };
 };
 
