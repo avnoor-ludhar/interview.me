@@ -3,17 +3,16 @@ import db from '../dbConnection.js';
 
 const requireAuth = async (req, res, next)=>{
     //verify authentication
-    const { authorization } = req.headers;
+    const token = req.cookies.accessToken;
 
-    if(!authorization){
+
+    if(!token){
         return res.status(401).json({error: 'Authorization token required'})
     }
-    //comes back as Bearer token
-    const token = authorization.split(' ')[1];
 
     try{
         //signed with our secret key so we can unravel same way
-        const { id } = jwt.verify(token, process.env.SECRET)
+        const { id } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
         try{
             req.user = await db.query('SELECT id FROM users WHERE id = $1', [id]);
             next();

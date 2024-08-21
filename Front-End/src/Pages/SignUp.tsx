@@ -10,13 +10,12 @@ import {
   } from "@/components/ui/card"
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/redux/store";
 import {addUser} from '@/redux/features/userSlice';
-
-type ButtonClickEvent = React.SyntheticEvent<HTMLButtonElement>;
+import api from "@/lib/axios";
   
 type formData = {
     email: string,
@@ -25,9 +24,9 @@ type formData = {
 }
 
 type responseData = {
-    email: string,
-    token: string
+    email: string
 }
+
 
 function SignUp(): JSX.Element {
     const [email, setEmail] = useState("");
@@ -37,28 +36,18 @@ function SignUp(): JSX.Element {
     const navigate: NavigateFunction = useNavigate();
     const dispatch = useAppDispatch();
 
-    //just sends an API reques tto the backend to get the JWT and stores it in local storage and the redux store
-    const handleClick = async (e:ButtonClickEvent) =>{
+    const handleClick = async () =>{
         try{
-            if(e.target instanceof HTMLButtonElement){
-                const eventData: HTMLButtonElement = e.target as HTMLButtonElement;
-                const formResponse: string[] = eventData?.value.split(",");
+            const formInput:formData = {email: email, password: password, passwordConfirm: passwordConfirm};
 
-                const formInput:formData = {email: formResponse[0], password: formResponse[1], passwordConfirm: formResponse[2]};
-
-                const url:string = `${import.meta.env.VITE_REACT_APP_API_URL}/api/user/register`;
-
-                const APIResponse  = await axios.post(url, formInput);
-                const data: responseData = APIResponse?.data;
-
-                localStorage.setItem('user', JSON.stringify(data));
-                dispatch(addUser({email: data.email, token: data.token}))
-                setEmail('');
-                setPassword('');
-                setPasswordConfirm('');
-                setError('');
-                navigate('/home');
-            }
+            const response: AxiosResponse = await api.post('/api/user/register', formInput);
+            const dataFromAPI: responseData = response.data;
+            
+            dispatch(addUser({email: dataFromAPI.email, token: ''}));// no need to store the token in redux
+            setEmail('');
+            setPassword('');
+            setError(null);
+            navigate('/home');
         } catch(err: unknown){
             if(axios.isAxiosError(err)){
                 const newError: AxiosError = err as AxiosError;
@@ -66,9 +55,15 @@ function SignUp(): JSX.Element {
             }else{
                 console.log("idk");
             }
-            
         }
     }
+    
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) =>{
+        if(e.key == 'Enter'){
+            handleClick();
+        }
+    }
+
     //basically shadcn will give us the base of the component
     //then we have to add all the stuff we want on top
     return (
@@ -84,19 +79,19 @@ function SignUp(): JSX.Element {
                         <Label htmlFor="email" >
                             Email
                         </Label>
-                        <Input id="email" onChange={e => setEmail(e.target.value)} type="email" placeholder="m@example.com" value={email}/>
+                        <Input id="email" onChange={e => setEmail(e.target.value)} onKeyDown={handleKeyDown} type="email" placeholder="m@example.com" value={email}/>
                     </div>
                     <div className="flex flex-col items-start space-y-2">
                         <Label htmlFor="password" >
                             Password
                         </Label>
-                        <Input id="password" onChange={e => setPassword(e.target.value)} type="password" value={password}/>
+                        <Input id="password" onChange={e => setPassword(e.target.value)} onKeyDown={handleKeyDown} type="password" value={password}/>
                     </div>
                     <div className="flex flex-col items-start space-y-2">
                         <Label htmlFor="password" >
                             Verify Password
                         </Label>
-                        <Input id="passwordConfirm" onChange={e => setPasswordConfirm(e.target.value)} type="password" value={passwordConfirm}/>
+                        <Input id="passwordConfirm" onChange={e => setPasswordConfirm(e.target.value)} onKeyDown={handleKeyDown} type="password" value={passwordConfirm}/>
                     </div>
                 </div>
                 
