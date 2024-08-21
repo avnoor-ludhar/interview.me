@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { audioDataFromTTS } from "@/utils/types";
+import { audioDataFromTTS, speaker } from "@/utils/types";
 
-const useAudioQueue = () => {
+const useAudioQueue = (currentSpeaker: speaker, setKillSocket: React.Dispatch<React.SetStateAction<boolean>>) => {
     const [audioQueue, setAudioQueue] = useState<audioDataFromTTS[]>([]);
     const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
     const [prevChunkNumber, setPrevChunkNumber] = useState<number>(-1)
     const [playChunkFlag, setPlayChunkFlag] = useState<boolean>(false);
-    // const [firstChunkFlag, setFirstChunkFlag] = useState<boolean>(false);
 
     const addToQueue = (audioData: audioDataFromTTS) => {
         setAudioQueue((prevQueue) => {
@@ -29,7 +28,16 @@ const useAudioQueue = () => {
             
             // this is an event listener to modify the queue on the ending of an audio sample
             audio.addEventListener('ended', () => {
-                setAudioQueue((prevQueue) => prevQueue.slice(1));
+                setAudioQueue((prevQueue) => {
+                    if(prevQueue.length == 1){
+                        const textToCheckEnd = currentSpeaker.text.toLowerCase();
+                        if(textToCheckEnd.includes("have a great day!")){
+                            setKillSocket(true);
+                            console.log("boom");
+                        }
+                    }
+                    return prevQueue.slice(1)
+                });
                 setCurrentAudio(null);
                 setPrevChunkNumber(nextAudioUrl.chunkNumber);
                 if(audioQueue[0].chunkNumber != (prevChunkNumber + 1)){
@@ -46,12 +54,9 @@ const useAudioQueue = () => {
     
     useEffect(() => {
         //checks if the currentAudio is null and we have some audio in our queue
-        console.log("currentAudio:", currentAudio)
-        console.log("audioQueue: ", audioQueue.length)
-        console.log("playChunkFlag: ", playChunkFlag)
         if (!currentAudio && audioQueue.length > 0 && playChunkFlag) {
             playNextAudio();
-        } 
+        }
     }, [audioQueue, currentAudio, playChunkFlag]);
 
     return { audioQueue, addToQueue, setPrevChunkNumber, setAudioQueue, setCurrentAudio };

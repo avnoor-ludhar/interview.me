@@ -7,6 +7,7 @@ import Navbar from '@/components/navbar';
 import SignUp from './Pages/SignUp';
 import Home from './Pages/Home';
 import Meeting from './Pages/Meeting';
+import Results from './Pages/Results';
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from './redux/store';
 import { addUser, removeUser } from "@/redux/features/userSlice";
@@ -22,7 +23,6 @@ function App(): JSX.Element {
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.user.user);
   const [isUserChecked, setIsUserChecked] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const checkSession = async () => {
@@ -54,6 +54,7 @@ function App(): JSX.Element {
             <Route path='/signup' element={!user ? <SignUp /> : <Navigate to='/home' />} />
             <Route path='/home' element={user ? <Home /> : <Navigate to='/login' />} />
             <Route path='/meeting' element={user ? <Meeting /> : <Navigate to='/login' />} />
+            <Route path='/results' element={user ? <Results /> : <Navigate to='/login' />} />
           </Routes>
         </div>
       </ThemeProvider>

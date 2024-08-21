@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/redux/store";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { speaker, UseWebSocketHook } from "@/utils/types";
 import useWebSocket from "@/hooks/useWebSocket";
@@ -24,8 +24,6 @@ useEffect should be last option.
 */
 
 export default function Meeting(): JSX.Element{
-    //entire transcription
-    const [currentTranscription, setCurrentTranscription] = useState<string>("");
     //used to hold the transcription for the current speaker and the transcription
     const [currentSpeaker, setCurrentSpeaker] = useState<speaker>({speaker: "Gemini", text: ""});
     //chat log of all the messages
@@ -37,8 +35,9 @@ export default function Meeting(): JSX.Element{
     const streamRef = useRef<MediaStream | null>(null);
     const user = useAppSelector(state=>state.user.user);
     const navigate = useNavigate();
+    const [killSocket, setKillSocket] = useState(false);
     //custom hook to keep track of all the functionality related to the audio queue
-    const { addToQueue, setPrevChunkNumber, setAudioQueue, setCurrentAudio } = useAudioQueue();
+    const { addToQueue, setPrevChunkNumber, setAudioQueue, setCurrentAudio } = useAudioQueue(currentSpeaker, setKillSocket);
     const {videoRef, stopVideo, startVideo, isVideoOn} = useVideo();
 
     if(!user){
@@ -74,8 +73,6 @@ export default function Meeting(): JSX.Element{
                     return [...log, prev];
                 });
             }
-
-            setCurrentTranscription((prevTranscript) => prevTranscript ? prevTranscript + " " + chunk : chunk);
 
             return newSpeaker;
         });
@@ -113,8 +110,6 @@ export default function Meeting(): JSX.Element{
                 });
             }
 
-            setCurrentTranscription((prevTranscript) => prevTranscript ? prevTranscript + " " + transcription : transcription);
-
             return newSpeaker;
         });
     }
@@ -143,6 +138,48 @@ export default function Meeting(): JSX.Element{
             connect(import.meta.env.VITE_WEBSOCKET_URL);
         }
     }
+
+    useEffect(() => {
+        // Navigate to results page
+        if(killSocket){
+            navigate("/results");
+        }
+        
+    
+        // Cleanup function to run when the component unmounts or when `killSocket` changes
+        return () => {
+            // Stop the microphone if it's still active
+            if (microphoneRef.current) {
+                microphoneRef.current.stop();
+                microphoneRef.current = null;
+            }
+    
+            // Stop all tracks in the media stream to release the microphone or camera
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current = null;
+            }
+    
+            // Disconnect the WebSocket if it's still connected
+            if (isConnected) {
+                disconnect();
+            }
+    
+            // Stop the video stream
+            stopVideo();
+    
+            // Reset state to default values
+            setCurrentSpeaker({ speaker: "Gemini", text: "" });
+            setChatLog([]);
+            setIsRecording(false);
+            setKillSocket(false);
+            setPrevChunkNumber(-1);
+            setAudioQueue([]);
+            setCurrentAudio(null);
+        };
+    }, [killSocket]);
+    
+    
 
     
     return (
