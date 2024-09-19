@@ -32,5 +32,11 @@ type MediaStreamRecorderType = {
     MediaStream: MediaStream | null
 }
 
+type audioQueueState = {
+    audioQueue: audioDataFromTTS[],
+    prevChunkNumber: number,
+    playChunkFlag: boolean,
+}
 
-export type {MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook};
+
+export type {MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState};
