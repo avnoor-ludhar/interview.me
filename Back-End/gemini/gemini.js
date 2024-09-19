@@ -17,9 +17,9 @@ export const chat = model.startChat({
 export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, interupted){
     try{
         if(messageEvent === "intro"){
-            msg = "Please introduce yourself as an interviewer from the University of Waterloo's Software Engineering program. Use a randomly chosen name, such as [John, Casey, Fied], and you are the admissions officer for waterloo's software engineering program, you will ask one problem solving and one personal question after this initial message in 3 different messages. Provide a quick introduction before you conduct the interview. Each response should be smaller than 60 words. Ensure the meeting isn't dragged on and in your conclusion you say have a great day. Make sure you are acting as an interviewer and not responding to this prompt.";
+            msg = "Please introduce yourself as an interviewer from the University of Waterloo's Software Engineering program. Use a randomly chosen name, such as [John, Casey, Fied], and you are the admissions officer for waterloo's software engineering program, you will ask one problem solving and one personal question after this initial message in 3 different messages. Provide a quick introduction before you conduct the interview. Each response should be smaller than 60 words. Ensure the meeting doesn't go above 5 back and forth messages however handle follow up questions and in your conclusion you HAVE TO SAY have a great day. Make sure you are acting as an interviewer and not responding to this prompt.";
         }else if(messageEvent === "end"){
-            msg += " Reponse to the content before this as if its the conclusion of the interview. Use the previous history of the responses for the conclusion. Ensure to end the interview with Have a great rest of your day!"
+            msg += "ONLY SEND A LIST OF THE QUESTIONS YOU ASKED. Separated by colons to be able to parse into an ARRAY."
         } else if(interupted){
             msg = "You were interupted by the user right before you said this part of your previous message: " + interupted + "and the user said: " + msg 
         }
@@ -34,6 +34,7 @@ export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, int
             text += chunkText;
             chunkCount += 1
         }
+        return text;
     } catch(error){
         console.log(error.message)
     }

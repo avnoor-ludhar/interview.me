@@ -161,7 +161,15 @@ wss.on('connection', (ws) => {
                 //kills connectin with deepgram
                 if (parsedMessage.type === 'end_deepgram_session') {
                     console.log("socket: received end session message");
-                    //write to db
+                    // let questions = await askAndrespond(chat, ws.globalMessage, ws, "end", ws.chunkCount);
+                    // questions = questions.split(":").slice(1)
+                    // console.log(questions);
+                    // for(const chat of parsedMessage.chatLog){
+                    //     console.log(chat);
+                    // }
+
+                    // const result = db.query("INSERT INTO qaofinterview WHERE interview_id = $1");
+                    
                     ws.globalMessage = "";
                     ws.chunkCount = 0;
                     ws.close();
