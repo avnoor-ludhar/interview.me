@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { UserSlice } from "./features/userSlice";
+import audioQueueReducer from "./features/audioQueueSlice";
 import { TypedUseSelectorHook, useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 
