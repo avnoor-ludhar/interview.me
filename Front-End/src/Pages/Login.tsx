@@ -26,6 +26,10 @@ type responseData = {
     email: string
 }
 
+type ErrorResponse = {
+    error: string | null;
+  };
+  
 function Login(): JSX.Element {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -52,7 +56,7 @@ function Login(): JSX.Element {
             navigate('/home');
         } catch(err: unknown){
             if(axios.isAxiosError(err)){
-                const newError: AxiosError = err as AxiosError;
+                const newError = err as AxiosError<ErrorResponse>;
                 setError(newError.response?.data?.error ?? 'Unknown error');
             }else{
                 console.log("idk");
