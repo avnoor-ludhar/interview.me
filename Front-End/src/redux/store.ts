@@ -6,7 +6,8 @@ import { useSelector } from "react-redux";
 
 export const store = configureStore({
     reducer: {
-        user: UserSlice.reducer
+        user: UserSlice.reducer,
+        audioQueue: audioQueueReducer
     }
 });
 
