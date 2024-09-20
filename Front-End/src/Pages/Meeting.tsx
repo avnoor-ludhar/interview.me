@@ -4,12 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { speaker, UseWebSocketHook } from "@/utils/types";
 import useWebSocket from "@/hooks/useWebSocket";
 import useAudioQueue from "@/hooks/useAudioQueue";
+import { useAppDispatch } from "@/redux/store";
 import { convertTextToSpeech } from "@/utils/convertTextToSpeech";
 import MeetingOptions from "@/components/MeetingOptions";
 import Chat from "@/components/Chat";
 import AIImg from "../assets/purpleOrb.png";
 import Video from "@/components/Video";
 import useVideo from "@/hooks/useVideo";
+import { setPrevChunkNumber } from "@/redux/features/audioQueueSlice";
 /*
 Custom hooks allow us to store stateful logic in them. This means each
 hook has a independant section compared to every other
@@ -37,7 +39,8 @@ export default function Meeting(): JSX.Element{
     const navigate = useNavigate();
     const [killSocket, setKillSocket] = useState(false);
     //custom hook to keep track of all the functionality related to the audio queue
-    const { addToQueue, setPrevChunkNumber, setAudioQueue, setCurrentAudio } = useAudioQueue(currentSpeaker, setKillSocket);
+    const dispatch = useAppDispatch();
+    const { audioQueue, addToQueue, setCurrentAudio } = useAudioQueue(currentSpeaker, setKillSocket);
     const {videoRef, stopVideo, startVideo, isVideoOn} = useVideo();
 
     if(!user){
@@ -85,22 +88,18 @@ export default function Meeting(): JSX.Element{
                 : { ...prev, text: prev.text + " " + transcription };
 
             if (prev.speaker === "Gemini") {
-                setPrevChunkNumber(-1);
+                dispatch(setPrevChunkNumber(-1));
 
-                setAudioQueue((queue) => {
-                    if(queue.length > 0 && socketRef.current != null){
-                        socketRef?.current.send(JSON.stringify({ type: 'Gemini_Interupted', chunkText: queue[0].chunkText }));
+                if(audioQueue.length > 0 && socketRef.current != null){
+                    socketRef?.current.send(JSON.stringify({ type: 'Gemini_Interupted', chunkText: audioQueue[0].chunkText }));
 
-                        setCurrentAudio((audio)=>{
-                            if(audio){
-                                audio.src = ""
-                            }
-                            return null
-                        });
-                        return [];
-                    }
-                    return queue;
-                })
+                    setCurrentAudio((audio)=>{
+                        if(audio){
+                            audio.src = ""
+                        }
+                        return null
+                    });
+                }
 
                 setChatLog((log) => {
                     if(log.length != 0 && log[log.length - 1].speaker == "Gemini"){
@@ -174,8 +173,6 @@ export default function Meeting(): JSX.Element{
             setChatLog([]);
             setIsRecording(false);
             setKillSocket(false);
-            setPrevChunkNumber(-1);
-            setAudioQueue([]);
             setCurrentAudio(null);
         };
     }, [killSocket]);
