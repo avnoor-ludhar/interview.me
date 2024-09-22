@@ -1,13 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { UserSlice } from "./features/userSlice";
 import audioQueueReducer from "./features/audioQueueSlice";
+import chatLogReducer from "./features/chatLogSlice";
 import { TypedUseSelectorHook, useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 
 export const store = configureStore({
     reducer: {
         user: UserSlice.reducer,
-        audioQueue: audioQueueReducer
+        audioQueue: audioQueueReducer,
+        chatLog: chatLogReducer
     }
 });
 

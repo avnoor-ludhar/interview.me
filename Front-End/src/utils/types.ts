@@ -38,5 +38,9 @@ type audioQueueState = {
     playChunkFlag: boolean,
 }
 
+type ChatLogState = {
+    chatLog: speaker[],
+    currentSpeaker: speaker;
+}
 
-export type {MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState};
+export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState};
