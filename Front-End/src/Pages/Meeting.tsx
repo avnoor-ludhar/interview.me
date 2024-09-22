@@ -43,9 +43,12 @@ export default function Meeting(): JSX.Element{
     const { audioQueue, addToQueue, setCurrentAudio } = useAudioQueue(currentSpeaker, setKillSocket);
     const {videoRef, stopVideo, startVideo, isVideoOn} = useVideo();
 
-    if(!user){
-        navigate('/');
-    }
+    useEffect(() => {
+        if (!user) {
+            navigate('/');
+        }
+    }, [user]);
+    
 
     const toggleMute = ()=>{
         if(streamRef.current){
@@ -90,7 +93,7 @@ export default function Meeting(): JSX.Element{
 
     const handleWebSocketMessage = (data: any) => {
         if (data && data.chunk) {
-            convertTextToSpeech(data, user, addToQueue);
+            convertTextToSpeech(data, addToQueue);
             updateStateWithChunk(data.chunk);
         } else {
             const transcriptionFromBackEnd = data.transcript;
