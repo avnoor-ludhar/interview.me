@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+
+
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -19,11 +21,14 @@ module.exports = {
     extend: {
       fontFamily: {
         'Montserrat': ['Montserrat', 'sans-serif'],
+        poppins: ['Poppins', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        darkGray: '#101a26',
+        night: '#0e1420',
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
