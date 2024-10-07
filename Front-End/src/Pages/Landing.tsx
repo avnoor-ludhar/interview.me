@@ -1,5 +1,3 @@
-
-
 import { Button } from "@/components/ui/button";
 import { TypeAnimation } from "react-type-animation";
 import { Input } from "@/components/ui/input";
@@ -16,7 +14,7 @@ export default function Landing(): JSX.Element {
   
   return (
     <>
-      <div className="flex flex-col font-Work-Sans">
+      <div className="flex flex-col font-poppins">
         <div className="text-5xl font-medium md:text-7xl w-[85%] m-auto md:w-[100%] pt-12 bg-gradient-to-r from-pink-700 via-violet-500 to-indigo-600 text-transparent bg-clip-text ">
           <h1>
             Interview Smarter<br></br> Excel Faster with A.I
@@ -150,7 +148,7 @@ export default function Landing(): JSX.Element {
             </p>
           </div>
 
-          <div className="flex max-w-sm space-x-2 mt-5 m-auto md:m-0 md:mt-40">
+          <div className="flex max-w-sm space-x-2 mt-5 m-auto md:m-0 md:mt-96 pb-10">
             <Input type="email" placeholder="Email" />
             <Button type="submit" className="text-white">
               Subscribe
@@ -159,10 +157,7 @@ export default function Landing(): JSX.Element {
         </div>
       </div>
 
-      <div className="flex flex-row w-full justify-between mt-48 items-center h-52 md:border-t-2 font-Work-Sans ">
-            <h1 className="ml-5 bg-gradient-to-r from-pink-700 via-violet-500 to-indigo-600 text-transparent bg-clip-text text-xl font-bold">Interview.me</h1>
-            <p className="text-indigo-400 text-sm font-semibold mr-5">Copyright © 2024 Interview.me Industries, LLC. All rights reserved.</p>
-      </div>
+
     </>
   );
 }
