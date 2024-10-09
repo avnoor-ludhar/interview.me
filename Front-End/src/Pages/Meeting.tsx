@@ -27,7 +27,7 @@ useEffect should be last option.
 */
 
 export default function Meeting(): JSX.Element{
-    // const { chatLog, currentSpeaker } = useAppSelector(state => state.chatLog);
+    const { chatLog, currentSpeaker } = useAppSelector(state => state.chatLog);
     const user = useAppSelector(state=>state.user.user);
     const dispatch = useAppDispatch();
     //functions to see if the microphone is recording
@@ -61,7 +61,7 @@ export default function Meeting(): JSX.Element{
 
     //updates the state if 
     const updateStateWithChunk = (chunk: string) => {
-        console.log(currentSpeaker.speaker);
+        console.log(currentSpeaker.speaker)
         if (currentSpeaker.speaker === "User") {
             dispatch(updateChatLog());
             dispatch(updateSpeaker({ speaker: "Gemini", text: chunk }));
