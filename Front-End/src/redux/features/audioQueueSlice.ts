@@ -14,21 +14,38 @@ const audioQueueSlice = createSlice({
         addToQueue: (state, action: PayloadAction<audioDataFromTTS>) => {
             const newQueue = [...state.audioQueue, action.payload];
             newQueue.sort((a, b) => a.chunkNumber - b.chunkNumber);
-            state.audioQueue = newQueue;
-            if (newQueue[0].chunkNumber === state.prevChunkNumber + 1) {
-                state.playChunkFlag = true;
+            return {
+                ...state,
+                audioQueue: newQueue,
+                playChunkFlag: newQueue[0].chunkNumber === state.prevChunkNumber + 1,
+            };
+        }, popFromQueue: (state)=>{
+            return {
+                ...state,
+                audioQueue: state.audioQueue.slice(1)
             }
         },
+        clearQueue: () => {
+            return {
+                audioQueue: [],
+                prevChunkNumber: -1,
+                playChunkFlag: false,
+            };
+        },
         setPrevChunkNumber: (state, action: PayloadAction<number>) => {
-            state.prevChunkNumber = action.payload;
+            return {
+                ...state,
+                prevChunkNumber: action.payload,
+            };
         },
-        clearQueue: (state) => {
-            state.audioQueue = [];
-            state.prevChunkNumber = -1;
-            state.playChunkFlag = false;
-        },
+        setPlayChunkFlag: (state, action: PayloadAction<boolean>) =>{
+            return {
+                ...state,
+                playChunkFlag: action.payload
+            }
+        }
     },
 });
 
+export const { addToQueue, popFromQueue, setPrevChunkNumber, clearQueue, setPlayChunkFlag } = audioQueueSlice.actions;
 export default audioQueueSlice.reducer;
-export const { addToQueue, setPrevChunkNumber, clearQueue } = audioQueueSlice.actions;

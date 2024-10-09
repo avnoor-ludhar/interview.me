@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from "@/redux/store";
 import { audioDataFromTTS, speaker } from "@/utils/types";
-import { setPrevChunkNumber, addToQueue, clearQueue} from "@/redux/features/audioQueueSlice"; //need to import the reducer
+import { setPrevChunkNumber, setPlayChunkFlag, popFromQueue} from "@/redux/features/audioQueueSlice"; //need to import the reducer
 
 const useAudioQueue = (currentSpeaker: speaker, setKillSocket: React.Dispatch<React.SetStateAction<boolean>>) => {
-    const audioQueue = useAppSelector(state => state.audioQueue.audioQueue);
-    const prevChunkNumber = useAppSelector(state => state.audioQueue.prevChunkNumber);
+    const {prevChunkNumber, playChunkFlag, audioQueue} = useAppSelector(state => state.audioQueue);
     const dispatch = useAppDispatch();
     const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
-    const [playChunkFlag, setPlayChunkFlag] = useState<boolean>(false);
 
     const playNextAudio = () => {
         if (audioQueue.length > 0) {
@@ -23,11 +21,12 @@ const useAudioQueue = (currentSpeaker: speaker, setKillSocket: React.Dispatch<Re
                 if(audioQueue.length == 1 && (textToCheckEnd.includes("haveagreatday") || textToCheckEnd.includes("haveagoodday"))){
                     setKillSocket(true);
                 }
+                dispatch(popFromQueue());
                 setCurrentAudio(null);
                 dispatch(setPrevChunkNumber(nextAudioUrl.chunkNumber));
 
-                if(audioQueue[0].chunkNumber != (prevChunkNumber + 1)){
-                    setPlayChunkFlag(false);
+                if(audioQueue.length > 1 && audioQueue[1].chunkNumber != (prevChunkNumber + 1)){
+                    dispatch(setPlayChunkFlag(false));
                 }
             });
 
@@ -39,15 +38,13 @@ const useAudioQueue = (currentSpeaker: speaker, setKillSocket: React.Dispatch<Re
     
     useEffect(() => {
         //checks if the currentAudio is null and we have some audio in our queue
+        console.log(audioQueue);
         if (!currentAudio && audioQueue.length > 0 && playChunkFlag) {
             playNextAudio();
         }
-        return () =>{
-            dispatch(clearQueue());
-        }
-    }, [currentAudio, playChunkFlag]);
+    }, [currentAudio, audioQueue, playChunkFlag]);
 
-    return { addToQueue, audioQueue, setCurrentAudio };
+    return {setCurrentAudio};
 };
 
 export default useAudioQueue;
