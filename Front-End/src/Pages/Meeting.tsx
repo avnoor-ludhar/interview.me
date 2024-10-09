@@ -27,7 +27,7 @@ useEffect should be last option.
 */
 
 export default function Meeting(): JSX.Element{
-    const { chatLog, currentSpeaker } = useAppSelector(state => state.chatLog);
+    // const { chatLog, currentSpeaker } = useAppSelector(state => state.chatLog);
     const user = useAppSelector(state=>state.user.user);
     const dispatch = useAppDispatch();
     //functions to see if the microphone is recording
@@ -61,34 +61,35 @@ export default function Meeting(): JSX.Element{
 
     //updates the state if 
     const updateStateWithChunk = (chunk: string) => {
-        if(currentSpeaker.speaker === "User"){
-            dispatch(updateSpeaker({ speaker: "Gemini", text: chunk }));
+        console.log(currentSpeaker.speaker);
+        if (currentSpeaker.speaker === "User") {
             dispatch(updateChatLog());
-        }else{
+            dispatch(updateSpeaker({ speaker: "Gemini", text: chunk }));
+        } else {
             dispatch(appendToCurrentSpeakerText(chunk));
         }
     }
+    
 
     const updateStateWithTranscription = (transcription: string) => {
         if (currentSpeaker.speaker === "Gemini") {
-          dispatch(updateSpeaker({ speaker: "User", text: transcription }));
-          dispatch(setPrevChunkNumber(-1));
-      
-          if (audioQueue.length > 0 && socketRef.current != null) {
-            socketRef?.current.send(JSON.stringify({ type: 'Gemini_Interrupted', chunkText: audioQueue[0].chunkText }));
-            setCurrentAudio((audio) => {
-              if (audio) {
-                audio.src = "";
-              }
-              return null;
-            });
-          }
-      
-          dispatch(updateChatLog());
+            dispatch(updateSpeaker({ speaker: "User", text: transcription }));
+            dispatch(setPrevChunkNumber(-1));
+    
+            if (audioQueue.length > 0 && socketRef.current) {
+                socketRef.current.send(JSON.stringify({ type: 'Gemini_Interrupted', chunkText: audioQueue[0].chunkText }));
+                setCurrentAudio((audio) => {
+                    if (audio) {
+                        audio.src = "";
+                    }
+                    return null;
+                });
+            }
+            dispatch(updateChatLog());
         } else {
-          dispatch(appendToCurrentSpeakerText(transcription));
+            dispatch(appendToCurrentSpeakerText(transcription));
         }
-      };
+    };
       
 
     const handleWebSocketMessage = (data: any) => {

@@ -45,7 +45,7 @@ const useAudioQueue = (currentSpeaker: speaker, setKillSocket: React.Dispatch<Re
         return () =>{
             dispatch(clearQueue());
         }
-    }, [audioQueue, currentAudio, playChunkFlag]);
+    }, [currentAudio, playChunkFlag]);
 
     return { addToQueue, audioQueue, setCurrentAudio };
 };
