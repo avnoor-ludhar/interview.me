@@ -13,11 +13,16 @@ const chatLogSlice = createSlice({
     reducers: {
         updateSpeaker:  (state, action: PayloadAction<{speaker: string; text: string}>) =>{
             const { speaker, text } = action.payload;
-            state.currentSpeaker = {speaker, text}
+            if (state.currentSpeaker.speaker !== speaker) {
+                state.currentSpeaker = { speaker, text };
+            } else {
+                state.currentSpeaker.text = text;
+            }
         },
         updateChatLog: (state) => {
-            if(state.chatLog.length == 0 || state.chatLog[state.chatLog.length - 1].speaker != state.currentSpeaker.speaker){
-                state.chatLog.push(state.currentSpeaker)
+            const lastLog = state.chatLog[state.chatLog.length - 1];
+            if (state.chatLog.length === 0 || lastLog.speaker !== state.currentSpeaker.speaker || lastLog.text !== state.currentSpeaker.text) {
+                state.chatLog.push({ ...state.currentSpeaker });
             }
         },
         appendToCurrentSpeakerText: (state, action: PayloadAction<string>) =>{
