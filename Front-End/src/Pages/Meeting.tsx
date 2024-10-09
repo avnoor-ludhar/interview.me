@@ -1,7 +1,7 @@
 import { useAppSelector } from "@/redux/store";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { UseWebSocketHook } from "@/utils/types";
+import { speaker, UseWebSocketHook } from "@/utils/types";
 import useWebSocket from "@/hooks/useWebSocket";
 import useAudioQueue from "@/hooks/useAudioQueue";
 import { useAppDispatch } from "@/redux/store";
@@ -27,7 +27,10 @@ useEffect should be last option.
 */
 
 export default function Meeting(): JSX.Element{
-    const { chatLog, currentSpeaker } = useAppSelector(state => state.chatLog);
+    //used to hold the transcription for the current speaker and the transcription
+    const [currentSpeaker, setCurrentSpeaker] = useState<speaker>({speaker: "Gemini", text: ""});
+    //chat log of all the messages
+    const [chatLog, setChatLog] = useState<speaker[]>([]);
     const user = useAppSelector(state=>state.user.user);
     const dispatch = useAppDispatch();
     //functions to see if the microphone is recording
@@ -61,35 +64,90 @@ export default function Meeting(): JSX.Element{
 
     //updates the state if 
     const updateStateWithChunk = (chunk: string) => {
-        console.log(currentSpeaker.speaker)
-        if (currentSpeaker.speaker === "User") {
-            dispatch(updateChatLog());
-            dispatch(updateSpeaker({ speaker: "Gemini", text: chunk }));
-        } else {
-            dispatch(appendToCurrentSpeakerText(chunk));
-        }
-    }
-    
+        setCurrentSpeaker((prev) => {
+            let newSpeaker = { ...prev, text: prev.text + " " + chunk };
+            if(prev.speaker === "User"){
+                newSpeaker = { speaker: "Gemini", text: chunk };
+            } else if(".,;:'!?".includes(chunk[0]) || prev.text.endsWith("'")){
+                newSpeaker = {...prev, text: prev.text + chunk}
+            } else if(prev.text[prev.text.length - 1] == " " && chunk[0] == "'"){
+                newSpeaker = {...prev, text: prev.text.slice(0, prev.text.length - 1) + chunk}
+            }
 
-    const updateStateWithTranscription = (transcription: string) => {
-        if (currentSpeaker.speaker === "Gemini") {
-            dispatch(updateSpeaker({ speaker: "User", text: transcription }));
-            dispatch(setPrevChunkNumber(-1));
-    
-            if (audioQueue.length > 0 && socketRef.current) {
-                socketRef.current.send(JSON.stringify({ type: 'Gemini_Interrupted', chunkText: audioQueue[0].chunkText }));
-                setCurrentAudio((audio) => {
-                    if (audio) {
-                        audio.src = "";
+            if (prev.speaker === "User") {
+                setChatLog((log) => {
+                    if(log.length != 0 && log[log.length - 1].speaker == "User"){
+                        return [...log];
                     }
-                    return null;
+                    return [...log, prev];
                 });
             }
-            dispatch(updateChatLog());
-        } else {
-            dispatch(appendToCurrentSpeakerText(transcription));
-        }
-    };
+
+            return newSpeaker;
+        });
+    }
+    
+    // const updateStateWithChunk = (chunk: string) => {
+    //     console.log(currentSpeaker.speaker)
+    //     if (currentSpeaker.speaker === "User") {
+    //         dispatch(updateChatLog());
+    //         dispatch(updateSpeaker({ speaker: "Gemini", text: chunk }));
+    //     } else {
+    //         dispatch(appendToCurrentSpeakerText(chunk));
+    //     }
+    // }
+
+    const updateStateWithTranscription = (transcription: string) => {
+        setCurrentSpeaker((prev) => {
+            const newSpeaker = prev.speaker === "Gemini"
+                ? { speaker: "User", text: transcription }
+                : { ...prev, text: prev.text + " " + transcription };
+
+            if (prev.speaker === "Gemini") {
+                dispatch(setPrevChunkNumber(-1));
+
+                if (audioQueue.length > 0 && socketRef.current) {
+                    socketRef.current.send(JSON.stringify({ type: 'Gemini_Interrupted', chunkText: audioQueue[0].chunkText }));
+                    setCurrentAudio((audio) => {
+                        if (audio) {
+                            audio.src = "";
+                        }
+                        return null;
+                    });
+                }
+
+                setChatLog((log) => {
+                    if(log.length != 0 && log[log.length - 1].speaker == "Gemini"){
+                        return [...log];
+                    }
+                    return [...log, prev];
+                });
+            }
+
+            return newSpeaker;
+        });
+    }
+
+
+    // const updateStateWithTranscription = (transcription: string) => {
+    //     if (currentSpeaker.speaker === "Gemini") {
+    //         dispatch(updateSpeaker({ speaker: "User", text: transcription }));
+    //         dispatch(setPrevChunkNumber(-1));
+    
+    //         if (audioQueue.length > 0 && socketRef.current) {
+    //             socketRef.current.send(JSON.stringify({ type: 'Gemini_Interrupted', chunkText: audioQueue[0].chunkText }));
+    //             setCurrentAudio((audio) => {
+    //                 if (audio) {
+    //                     audio.src = "";
+    //                 }
+    //                 return null;
+    //             });
+    //         }
+    //         dispatch(updateChatLog());
+    //     } else {
+    //         dispatch(appendToCurrentSpeakerText(transcription));
+    //     }
+    // };
       
 
     const handleWebSocketMessage = (data: any) => {
