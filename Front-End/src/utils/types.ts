@@ -42,5 +42,9 @@ type ChatLogState = {
     chatLog: speaker[],
     currentSpeaker: speaker;
 }
+type WebSocketMessage = {
+    chunk?: string;
+    transcript?: string;
+}
 
-export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState};
+export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage};

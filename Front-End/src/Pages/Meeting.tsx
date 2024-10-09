@@ -11,7 +11,7 @@ import Chat from "@/components/Chat";
 import AIImg from "../assets/purpleOrb.png";
 import Video from "@/components/Video";
 import useVideo from "@/hooks/useVideo";
-import { setPrevChunkNumber } from "@/redux/features/audioQueueSlice";
+import { setPrevChunkNumber, clearQueue } from "@/redux/features/audioQueueSlice";
 import { appendToCurrentSpeakerText, clearChatLog, resetSpeaker, updateChatLog, updateSpeaker } from "@/redux/features/chatLogSlice";
 /*
 Custom hooks allow us to store stateful logic in them. This means each
@@ -30,6 +30,7 @@ export default function Meeting(): JSX.Element{
     //used to hold the transcription for the current speaker and the transcription
     const [currentSpeaker, setCurrentSpeaker] = useState<speaker>({speaker: "Gemini", text: ""});
     //chat log of all the messages
+    const {audioQueue} = useAppSelector(state => state.audioQueue);
     const [chatLog, setChatLog] = useState<speaker[]>([]);
     const user = useAppSelector(state=>state.user.user);
     const dispatch = useAppDispatch();
@@ -43,7 +44,7 @@ export default function Meeting(): JSX.Element{
     const [killSocket, setKillSocket] = useState(false);
     //custom hook to keep track of all the functionality related to the audio queue
     
-    const { audioQueue, addToQueue, setCurrentAudio } = useAudioQueue(currentSpeaker, setKillSocket);
+    const { setCurrentAudio } = useAudioQueue(currentSpeaker, setKillSocket);
     const {videoRef, stopVideo, startVideo, isVideoOn} = useVideo();
 
     useEffect(() => {
@@ -152,7 +153,7 @@ export default function Meeting(): JSX.Element{
 
     const handleWebSocketMessage = (data: any) => {
         if (data && data.chunk) {
-            convertTextToSpeech(data, addToQueue);
+            convertTextToSpeech(data, dispatch);
             updateStateWithChunk(data.chunk);
         } else {
             const transcriptionFromBackEnd = data.transcript;
@@ -206,8 +207,9 @@ export default function Meeting(): JSX.Element{
             stopVideo();
     
             // Reset state to default values
+            dispatch(clearQueue());
             dispatch(resetSpeaker());
-            dispatch(clearChatLog())
+            dispatch(clearChatLog());
             setIsRecording(false);
             setKillSocket(false);
             setCurrentAudio(null);
