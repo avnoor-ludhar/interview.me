@@ -32,14 +32,24 @@ export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, int
         }
         const result = await chat.sendMessageStream(msg);
         let text = '';
+        let textToSend = '';
         //waits for each message stream which send chunks as they are available
         for await (const chunk of result.stream) {
             const chunkText = chunk.text();
-            const jsonForFrontEnd = {chunkNumber: chunkCount, chunk: chunkText}
+            textToSend += chunkText;
+            if(chunkCount % 1 == 0 && chunkCount != 0){
+                const jsonForFrontEnd = {chunkNumber: chunkCount - 1, chunk: textToSend}
+                //sends the data to the front end via the web socket connection
+                ws.send(JSON.stringify(jsonForFrontEnd));
+                textToSend = '';
+            }
+            text += chunkText;
+            chunkCount += 0.5
+        }
+        if(textToSend != ''){
+            const jsonForFrontEnd = {chunkNumber: chunkCount - 1, chunk: textToSend}
             //sends the data to the front end via the web socket connection
             ws.send(JSON.stringify(jsonForFrontEnd));
-            text += chunkText;
-            chunkCount += 1
         }
         return text;
     } catch(error){
