@@ -18,7 +18,7 @@ const useAudioQueue = (currentSpeaker: speaker, setKillSocket: React.Dispatch<Re
             // this is an event listener to modify the queue on the ending of an audio sample
             audio.addEventListener('ended', () => {
                 const textToCheckEnd: string = currentSpeaker.text.toLowerCase().replace(/ /g, "");
-                if(audioQueue.length == 1 && (textToCheckEnd.includes("haveagreatday") || textToCheckEnd.includes("haveagoodday"))){
+                if(audioQueue.length == 1 && (textToCheckEnd.includes("haveagreatday") || textToCheckEnd.includes("haveagoodday") || textToCheckEnd.includes("haveawonderfulday"))){
                     setKillSocket(true);
                 }
                 dispatch(popFromQueue());
