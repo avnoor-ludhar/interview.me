@@ -107,15 +107,15 @@ export default function Meeting(): JSX.Element{
             if (prev.speaker === "Gemini") {
                 dispatch(setPrevChunkNumber(-1));
 
-                if (audioQueue.length > 0 && socketRef.current) {
-                    socketRef.current.send(JSON.stringify({ type: 'Gemini_Interrupted', chunkText: audioQueue[0].chunkText }));
-                    setCurrentAudio((audio) => {
-                        if (audio) {
-                            audio.src = "";
-                        }
-                        return null;
-                    });
-                }
+                // if (audioQueue.length > 0 && socketRef.current) {
+                //     socketRef.current.send(JSON.stringify({ type: 'Gemini_Interrupted', chunkText: audioQueue[0].chunkText }));
+                //     setCurrentAudio((audio) => {
+                //         if (audio) {
+                //             audio.src = "";
+                //         }
+                //         return null;
+                //     });
+                // }
 
                 setChatLog((log) => {
                     if(log.length != 0 && log[log.length - 1].speaker == "Gemini"){
@@ -171,6 +171,7 @@ export default function Meeting(): JSX.Element{
             microphoneRef.current?.stop();
             microphoneRef.current = null;
             disconnect();
+            navigate("/results");
         } else{
             connect(import.meta.env.VITE_WEBSOCKET_URL);
         }
@@ -186,6 +187,13 @@ export default function Meeting(): JSX.Element{
         // Cleanup function to run when the component unmounts or when `killSocket` changes
         return () => {
             // Stop the microphone if it's still active
+
+            setCurrentAudio((audio) => {
+                if (audio) {
+                    audio.src = "";
+                }
+                return null;
+            });
             if (microphoneRef.current) {
                 microphoneRef.current.stop();
                 microphoneRef.current = null;
