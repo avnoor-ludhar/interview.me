@@ -3,7 +3,7 @@ import { RootState } from '@/redux/store';
 import { updateSpeaker, updateChatLog, appendToCurrentSpeakerText } from './chatLogSlice';
 import { setPrevChunkNumber } from './audioQueueSlice';
 
-interface WebSocketMessage {
+type WebSocketMessage = {
     chunk?: string;
     transcript?: string;
 }
@@ -17,21 +17,21 @@ export const handleWebSocketThunk = createAsyncThunk<void, WebSocketMessage, { s
         if (data.chunk) {
             if (currentSpeaker.speaker === "User") {
                 // First, push the current speaker's data to the chat log
-                await dispatch(updateChatLog());
+                dispatch(updateChatLog());
 
                 // Then, set the new speaker data for "Gemini" with the new chunk
-                await dispatch(updateSpeaker({ speaker: "Gemini", text: data.chunk }));
+                dispatch(updateSpeaker({ speaker: "Gemini", text: data.chunk }));
             } else {
                 // If the current speaker is Gemini, append chunk to current text
-                await dispatch(appendToCurrentSpeakerText(data.chunk));
+                dispatch(appendToCurrentSpeakerText(data.chunk));
             }
         } else if (data.transcript) {
             if (currentSpeaker.speaker === "Gemini") {
                 // Switch to "User" and set transcript as new text
-                await dispatch(updateSpeaker({ speaker: "User", text: data.transcript }));
+                dispatch(updateSpeaker({ speaker: "User", text: data.transcript }));
 
                 // Reset the chunk number for Gemini interruption logic
-                await dispatch(setPrevChunkNumber(-1));
+                dispatch(setPrevChunkNumber(-1));
 
                 // Optionally, handle Gemini interruption logic here
                  // if (audioQueue.length > 0) {
@@ -46,10 +46,10 @@ export const handleWebSocketThunk = createAsyncThunk<void, WebSocketMessage, { s
 
 
                 // Add Gemini's last response to the chat log
-                await dispatch(updateChatLog());
+                dispatch(updateChatLog());
             } else {
                 // If the current speaker is User, append transcript to current text
-                await dispatch(appendToCurrentSpeakerText(data.transcript));
+                dispatch(appendToCurrentSpeakerText(data.transcript));
             }
         }
     }
