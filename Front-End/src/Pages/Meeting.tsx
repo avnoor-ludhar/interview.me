@@ -13,6 +13,7 @@ import useVideo from "@/hooks/useVideo";
 import { clearQueue } from "@/redux/features/audioQueueSlice";
 import { clearChatLog, resetSpeaker } from "@/redux/features/chatLogSlice";
 import { handleWebSocketThunk } from "@/redux/features/chatLogThunk";
+import { convertTextToSpeech } from "@/utils/convertTextToSpeech";
 /*
 Custom hooks allow us to store stateful logic in them. This means each
 hook has a independant section compared to every other
@@ -42,7 +43,15 @@ export default function Meeting(): JSX.Element{
     //custom hook to keep track of all the functionality related to the audio queue
     
     const { setCurrentAudio } = useAudioQueue( setKillSocket);
-    const { connect, disconnect, isConnected, socketRef }: UseWebSocketHook = useWebSocket((data) => dispatch(handleWebSocketThunk(data)), microphoneRef, streamRef, setIsRecording);
+
+    
+    const handleWebSocketMessage = async (data: any)=>{
+        if(data.chunk){
+            await convertTextToSpeech(data, dispatch);
+        }
+        dispatch(handleWebSocketThunk(data));
+    }
+    const { connect, disconnect, isConnected, socketRef }: UseWebSocketHook = useWebSocket(handleWebSocketMessage, microphoneRef, streamRef, setIsRecording);
     const {videoRef, stopVideo, startVideo, isVideoOn} = useVideo();
 
     useEffect(() => {

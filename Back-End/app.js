@@ -192,9 +192,9 @@ wss.on('connection', (ws) => {
             } else if (deepgram !== null && deepgram.getReadyState() >= 2) {
                 console.log("socket: data couldn't be sent to deepgram");
                 console.log("socket: retrying connection to deepgram");
-                deepgram.finish();
+                deepgram.close();
                 deepgram.removeAllListeners();
-                deepgram = setupDeepgram(socket);
+                deepgram = setupDeepgram(ws);
             } else {
                 console.log("socket: data couldn't be sent to deepgram");
             }

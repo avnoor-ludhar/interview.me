@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { start } from "@/utils/microphone";
 
 const isJSON = (str: string) => {

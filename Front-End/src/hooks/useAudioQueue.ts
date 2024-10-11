@@ -40,7 +40,6 @@ const useAudioQueue = (setKillSocket: React.Dispatch<React.SetStateAction<boolea
     
     useEffect(() => {
         //checks if the currentAudio is null and we have some audio in our queue
-        console.log(audioQueue);
         if (!currentAudio && audioQueue.length > 0 && playChunkFlag) {
             playNextAudio();
         }
