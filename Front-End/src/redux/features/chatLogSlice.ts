@@ -25,16 +25,32 @@ const chatLogSlice = createSlice({
                 state.chatLog.push({ ...state.currentSpeaker });
             }
         },
-        appendToCurrentSpeakerText: (state, action: PayloadAction<string>) =>{
+        appendToCurrentSpeakerText: (state, action: PayloadAction<string>) => {
             const chunk = action.payload;
-            if(".,;:'!?".includes(chunk[0]) || state.currentSpeaker.text.endsWith("'")){
-                state.currentSpeaker.text += chunk;
-            } else if(state.currentSpeaker.text[state.currentSpeaker.text.length - 1] == " " && chunk[0] == "'"){
-                state.currentSpeaker.text = state.currentSpeaker.text.slice(0, -1) + chunk;
-            }else{
-                state.currentSpeaker.text += chunk;
+        
+            // Handle punctuation at the beginning or single quotes at the end
+            if (".,;:'!?".includes(chunk[0]) || state.currentSpeaker.text.endsWith("'")) {
+                state.currentSpeaker = {
+                    ...state.currentSpeaker,
+                    text: state.currentSpeaker.text + chunk,
+                };
+            } 
+            // Handle cases where the last character is a space and the chunk starts with a single quote
+            else if (state.currentSpeaker.text[state.currentSpeaker.text.length - 1] === " " && chunk[0] === "'") {
+                state.currentSpeaker = {
+                    ...state.currentSpeaker,
+                    text: state.currentSpeaker.text.slice(0, -1) + chunk,
+                };
+            } 
+            // General case for appending the chunk
+            else {
+                state.currentSpeaker = {
+                    ...state.currentSpeaker,
+                    text: state.currentSpeaker.text + chunk,
+                };
             }
         },
+        
         resetSpeaker: (state) =>{
             state.currentSpeaker = { speaker: "Gemini", text: ""};
         },
