@@ -7,42 +7,36 @@ const initialState: audioQueueState = {
     playChunkFlag: false,
 };
 
+//slice doesnt mutate array so immer doesn't catch it
 const audioQueueSlice = createSlice({
     name: "audioQueue",
     initialState,
     reducers: {
         addToQueue: (state, action: PayloadAction<audioDataFromTTS>) => {
-            const newQueue = [...state.audioQueue, action.payload];
-            newQueue.sort((a, b) => a.chunkNumber - b.chunkNumber);
-            return {
-                ...state,
-                audioQueue: newQueue,
-                playChunkFlag: newQueue[0].chunkNumber === state.prevChunkNumber + 1,
-            };
-        }, popFromQueue: (state)=>{
-            return {
-                ...state,
-                audioQueue: state.audioQueue.slice(1)
-            }
+            // Directly mutate the state.audioQueue array
+            state.audioQueue.push(action.payload);
+            state.audioQueue.sort((a, b) => a.chunkNumber - b.chunkNumber);
+
+            // Update the playChunkFlag based on the sorted queue
+            state.playChunkFlag = state.audioQueue[0]?.chunkNumber === state.prevChunkNumber + 1;
         },
-        clearQueue: () => {
-            return {
-                audioQueue: [],
-                prevChunkNumber: -1,
-                playChunkFlag: false,
-            };
+        popFromQueue: (state) => {
+            // Remove the first item from the audioQueue array
+            state.audioQueue.shift();
+        },
+        clearQueue: (state) => {
+            // Reset to initial state values
+            state.audioQueue = [];
+            state.prevChunkNumber = -1;
+            state.playChunkFlag = false;
         },
         setPrevChunkNumber: (state, action: PayloadAction<number>) => {
-            return {
-                ...state,
-                prevChunkNumber: action.payload,
-            };
+            // Directly set the prevChunkNumber
+            state.prevChunkNumber = action.payload;
         },
-        setPlayChunkFlag: (state, action: PayloadAction<boolean>) =>{
-            return {
-                ...state,
-                playChunkFlag: action.payload
-            }
+        setPlayChunkFlag: (state, action: PayloadAction<boolean>) => {
+            // Directly set the playChunkFlag
+            state.playChunkFlag = action.payload;
         }
     },
 });
