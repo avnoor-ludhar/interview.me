@@ -1,20 +1,21 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { RootState } from '@/redux/store';
+import { AppDispatch, RootState } from '@/redux/store';
 import { updateSpeaker, updateChatLog, appendToCurrentSpeakerText } from './chatLogSlice';
 import { setPrevChunkNumber } from './audioQueueSlice';
+import { convertTextToSpeech } from '@/utils/convertTextToSpeech';
+import { dataFromGemini, WebSocketMessage } from '@/utils/types';
 
-type WebSocketMessage = {
-    chunk?: string;
-    transcript?: string;
+function isDataFromGemini(data: WebSocketMessage): data is dataFromGemini {
+    return (data as dataFromGemini).chunk !== undefined;
 }
 
-export const handleWebSocketThunk = createAsyncThunk<void, WebSocketMessage, { state: RootState }>(
+export const handleWebSocketThunk = createAsyncThunk<void, WebSocketMessage, { state: RootState, dispatch: AppDispatch }>(
     'chatLog/handleWebSocketMessage',
     async (data, { dispatch, getState }) => {
-        console.log(data);
         const { currentSpeaker } = getState().chatLog;
 
-        if (data.chunk) {
+        if (isDataFromGemini(data)) {
+            await convertTextToSpeech(data, dispatch)
             if (currentSpeaker.speaker === "User") {
                 // First, push the current speaker's data to the chat log
                 dispatch(updateChatLog());
@@ -27,26 +28,13 @@ export const handleWebSocketThunk = createAsyncThunk<void, WebSocketMessage, { s
             }
         } else if (data.transcript) {
             if (currentSpeaker.speaker === "Gemini") {
+                // Add Gemini's last response to the chat log
+                dispatch(updateChatLog());
                 // Switch to "User" and set transcript as new text
                 dispatch(updateSpeaker({ speaker: "User", text: data.transcript }));
 
                 // Reset the chunk number for Gemini interruption logic
                 dispatch(setPrevChunkNumber(-1));
-
-                // Optionally, handle Gemini interruption logic here
-                 // if (audioQueue.length > 0) {
-                //     socketRef.current?.send(JSON.stringify({ type: 'Gemini_Interrupted', chunkText: audioQueue[0].chunkText }));
-                //     setCurrentAudio((audio) => {
-                //         if (audio) {
-                //             audio.src = "";
-                //         }
-                //         return null;
-                //     });
-                // }
-
-
-                // Add Gemini's last response to the chat log
-                dispatch(updateChatLog());
             } else {
                 // If the current speaker is User, append transcript to current text
                 dispatch(appendToCurrentSpeakerText(data.transcript));
