@@ -158,6 +158,3 @@ dist
 
 #node modules
 node_modules/
-
-/Back-End/.env
-/Front-End/.env
