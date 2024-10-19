@@ -9,6 +9,7 @@ import { WebSocketServer } from 'ws';
 import { chat, askAndrespond } from './gemini/gemini.js';
 import { setupDeepgram, clearDeepgram } from './deepgram/deepgram.js';
 import jwt from 'jsonwebtoken';
+import axios from "axios";
 
 //configuring dotenv fild
 dotenv.config();
@@ -23,7 +24,7 @@ db.connect();
 //from the origin listed or it is usually blocked for safety concerns
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: ["http://localhost:5173", "http://localhost:8081"],
         methods: "GET,POST,PUT,PATCH,DELETE",
         credentials: true,
     })
@@ -91,6 +92,15 @@ const parseCookies = (cookieHeader) => {
     return list;
 };
 
+//utility function to handle different messages from the front-end
+const isJSON = (str) => {
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
 
 const wss = new WebSocketServer({ noServer: true });
 
@@ -111,7 +121,7 @@ s.on('upgrade', (req, socket, head) =>{
 
     try {
         // Verify the token
-        const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+        const user = {userInfo: jwt.verify(token, process.env.ACCESS_TOKEN_SECRET), accessToken: token}
         req.user = user; // Attach user info to the request
 
         // Proceed with WebSocket upgrade
@@ -127,28 +137,19 @@ s.on('upgrade', (req, socket, head) =>{
     }
 });
 
-
 //iniital handshake of the websocket server 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
     console.log('websocket connected on port 8081...');
+    //access token to hit up the api layer
+    const { accessToken } = req.user;
     //variables connected with this specific web socket connection
     ws.globalMessage = "";
     ws.chunkCount = 0;
 	ws.keepAlive;
     ws.interupted;
-
+    ws.interviewId;
     //variable that holds the connection to deepgram
     let deepgram = setupDeepgram(ws, askAndrespond, chat);
-
-    //utility function to handle different messages from the front-end
-    const isJSON = (str) => {
-        try {
-            JSON.parse(str);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    }
 
     //message event on the websocket when a message is sent via the websocket it fires this callback function
     ws.on('message', async (message) => {
@@ -168,14 +169,38 @@ wss.on('connection', (ws) => {
                     //     console.log(chat);
                     // }
 
-                    // const result = db.query("INSERT INTO qaofinterview WHERE interview_id = $1");
-                    
+                    try{
+                        const { data } = await axios.post("http://localhost:8080/api/interview/endInterview",
+                            {
+                                interviewId: ws.interviewId,
+                                chatLog: parsedMessage.chatLog
+                            },
+                            {
+                            headers: {
+                                Authorization: `Bearer ${accessToken}` // Attach the JWT here
+                            }
+                        });
+                        console.log(data)
+                    }catch(error){
+                        console.log("error fetching data: ", error.message);
+                    }
                     ws.globalMessage = "";
                     ws.chunkCount = 0;
                     ws.close();
                     return;
                 } else if (parsedMessage.type == 'start_deepgram_session') {
                     //starts connection
+                    try{
+                        const { data } = await axios.get("http://localhost:8080/api/interview/startInterview", {
+                            headers: {
+                                Authorization: `Bearer ${accessToken}` // Attach the JWT here
+                            }
+                        });
+                        ws.interviewId = data.interviewId;
+                    }catch(error){
+                        console.log("error fetching data: ", error.message);
+                    }
+                    
                     const introMessage = await askAndrespond(chat, ws.globalMessage, ws, "intro", ws.chunkCount);
                     ws.send(introMessage);
                 } else if(parsedMessage.type == 'Gemini_Interupted'){

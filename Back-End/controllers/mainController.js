@@ -1,13 +1,42 @@
 import { createClient } from "@deepgram/sdk";
 import dotenv from 'dotenv';
+import db from "../dbConnection.js";
 dotenv.config();
 
 //connects to deepgram
 const deepgram = createClient(process.env.DEEPGRAM_APIKEY)
 
-//ignore
-const dataFunc = async (req, res)=>{
-    res.send({success: 'success'});
+const startInterview = async (req, res) => {
+  const user = req.user;
+
+  try{
+    const {rows} = await db.query(
+      "INSERT INTO interviews (user_id, typeofinterview, institution) VALUES ($1, $2, $3) RETURNING *", 
+      [user.id, 'SWE', 'CIBC']
+    );
+    return res.status(201).json({interviewId: rows[0].id})
+  }catch(error){
+    console.error(error)
+    return res.status(403).json({error: "Could not insert into database."})
+  }
+}
+
+const endInterview = async (req, res) => {
+  const {interviewId, chatLog} = req.body
+  if(chatLog && interviewId){
+    try{
+      const {rows} = await db.query(
+        "INSERT INTO qaofinterview (interview_id, chat) VALUES ($1, $2) RETURNING *", 
+        [interviewId, JSON.stringify(chatLog)]
+      );
+      return res.status(201).json({record: rows[0]})
+    }catch(error){
+      console.error(error)
+      return res.status(401).json({error: "Could not insert into database."})
+    }
+  }else{
+    return res.status(500).json({ error: "No chat log or interview ID provided." });
+  }
 }
 
 //controller function that converts text to speech via deepgram 
@@ -50,4 +79,4 @@ const textToSpeechDeepgram = async (req, res) =>{
   }
 }
 
-export {dataFunc, textToSpeechDeepgram};
+export {endInterview, startInterview, textToSpeechDeepgram};
