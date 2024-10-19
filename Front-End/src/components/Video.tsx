@@ -17,8 +17,8 @@ const Video = ({videoRef, stopVideo, startVideo}: videoProps) =>{
         }
     }, [])
     return (
-        <div className="flex items-center justify-center">
-            <video className="w-full h-full object-cover" ref={videoRef} autoPlay playsInline/>
+        <div className="flex items-center justify-center col-span-2">
+            <video className="w-full h-full object-cover overflow-hidden max-h-[87vh]" ref={videoRef} autoPlay playsInline/>
         </div>
     )
 }
