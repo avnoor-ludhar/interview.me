@@ -72,11 +72,7 @@ export default function Meeting(): JSX.Element{
 
     const handleRecord = () =>{
         if(isConnected){
-            setIsRecording(false);
-            microphoneRef.current?.stop();
-            microphoneRef.current = null;
-            disconnect();
-            navigate("/results");
+            setKillSocket(true);
         } else{
             connect(import.meta.env.VITE_WEBSOCKET_URL);
         }
