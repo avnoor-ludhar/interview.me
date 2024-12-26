@@ -45,7 +45,7 @@ const useAudioQueue = (setKillSocket: React.Dispatch<React.SetStateAction<boolea
         }
     }, [currentAudio, audioQueue, playChunkFlag]);
 
-    return {setCurrentAudio};
+    return {currentAudio, setCurrentAudio};
 };
 
 export default useAudioQueue;

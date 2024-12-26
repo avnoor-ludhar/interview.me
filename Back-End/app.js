@@ -197,10 +197,10 @@ wss.on('connection', (ws, req) => {
                             }
                         });
                         ws.interviewId = data.interviewId;
+                        ws.send(JSON.stringify({ type: 'interviewId', interviewId: ws.interviewId }));
                     }catch(error){
                         console.log("error fetching data: ", error.message);
                     }
-                    
                     const introMessage = await askAndrespond(chat, ws.globalMessage, ws, "intro", ws.chunkCount);
                     ws.send(introMessage);
                 } else if(parsedMessage.type == 'Gemini_Interupted'){

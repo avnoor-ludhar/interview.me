@@ -14,6 +14,7 @@ const isJSON = (str: string) => {
 const useWebSocket = (handleWebSocketMessage: (data: any) => void, microphoneRef: React.MutableRefObject<MediaRecorder | null>, streamRef: React.MutableRefObject<MediaStream | null>, setIsRecording: React.Dispatch<React.SetStateAction<boolean>>) => {
     const socketRef = useRef<null | WebSocket>(null);
     const [isConnected, setIsConnected] = useState(false);
+    const [interviewId, setInterviewId] = useState<number | null>(null);
 
     const connect = (url: string) => {
         socketRef.current = new WebSocket(url);
@@ -33,7 +34,13 @@ const useWebSocket = (handleWebSocketMessage: (data: any) => void, microphoneRef
         socketRef.current.addEventListener("message", (event) => {
             if (isJSON(event.data)) {
                 const data = JSON.parse(event.data);
-                handleWebSocketMessage(data);
+
+                if (data.type === 'interviewId') {
+                    setInterviewId(data.interviewId);
+                    console.log("Received interviewId:", data.interviewId);
+                }else{
+                    handleWebSocketMessage(data);
+                }
             }
         });
 
@@ -62,7 +69,7 @@ const useWebSocket = (handleWebSocketMessage: (data: any) => void, microphoneRef
         }
     };
 
-    return { connect, disconnect, isConnected, socketRef };
+    return { connect, disconnect, isConnected, socketRef, interviewId};
 };
 
 export default useWebSocket;

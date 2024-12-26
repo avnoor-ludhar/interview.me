@@ -24,7 +24,8 @@ type UseWebSocketHook = {
     socketRef: React.MutableRefObject<WebSocket | null>,
     isConnected: boolean,
     disconnect: () => void,
-    connect: (url: string) => void
+    connect: (url: string) => void,
+    interviewId: number | null
 }
 
 type MediaStreamRecorderType = {

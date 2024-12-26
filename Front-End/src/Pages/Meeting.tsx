@@ -7,7 +7,6 @@ import useAudioQueue from "@/hooks/useAudioQueue";
 import { useAppDispatch } from "@/redux/store";
 import MeetingOptions from "@/components/MeetingOptions";
 import Chat from "@/components/Chat";
-import AIImg from "../assets/purpleOrb.png";
 import Video from "@/components/Video";
 import useVideo from "@/hooks/useVideo";
 import { clearQueue } from "@/redux/features/audioQueueSlice";
@@ -42,7 +41,7 @@ export default function Meeting(): JSX.Element{
     const [killSocket, setKillSocket] = useState(false);
     //custom hook to keep track of all the functionality related to the audio queue
     
-    const { setCurrentAudio } = useAudioQueue( setKillSocket);
+    const { currentAudio, setCurrentAudio } = useAudioQueue( setKillSocket);
 
     
     const handleWebSocketMessage = async (data: any)=>{
@@ -51,15 +50,9 @@ export default function Meeting(): JSX.Element{
         }
         dispatch(handleWebSocketThunk(data));
     }
-    const { connect, disconnect, isConnected, socketRef }: UseWebSocketHook = useWebSocket(handleWebSocketMessage, microphoneRef, streamRef, setIsRecording);
-    const {videoRef, stopVideo, startVideo, isVideoOn} = useVideo();
 
-    useEffect(() => {
-        if (!user) {
-            navigate('/');
-        }
-    }, [user]);
-    
+    const { connect, disconnect, isConnected, socketRef, interviewId }: UseWebSocketHook = useWebSocket(handleWebSocketMessage, microphoneRef, streamRef, setIsRecording);
+    const {videoRef, stopVideo, startVideo, isVideoOn} = useVideo();
 
     const toggleMute = ()=>{
         if(streamRef.current){
@@ -77,6 +70,18 @@ export default function Meeting(): JSX.Element{
             connect(import.meta.env.VITE_WEBSOCKET_URL);
         }
     }
+    useEffect(() => {
+        if (!user) {
+            navigate('/');
+        }
+    }, [user]);
+
+    useEffect(() =>{
+        if((currentAudio && isRecording) || (!currentAudio && !isRecording)){
+            toggleMute();
+        }
+    }, [currentAudio, currentSpeaker])
+    
 
     useEffect(() => {
         // Navigate to results page

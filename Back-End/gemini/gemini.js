@@ -17,13 +17,14 @@ export const chat = model.startChat({
 export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, interupted){
     try{
         if(messageEvent === "intro"){
-            msg = `Please introduce yourself as an interviewer from the CIBC Application Software Developer Co-op (Commercial Banking, Payments & Wealth Technology - 4 months co-op). Here is the description of the job: 
+            msg = `Use a randomly chosen name FOR YOURSELF, and you are the BEHAVIOURAL interviewer for this position: CIBC Application Software Developer Co-op (Commercial Banking, Payments & Wealth Technology - 4 months co-op). 
+            You will FIRST have ONE INTRODUCTION MESSAGE to the user, after this you will follow up with ONE QUESTION AT A TIME AFTER USER SPEAKS. Each response by YOU should be SMALLER than 60 words and should either CONTINUE the INTERVIEW or FOLLOW UP. 
+            Ensure the meeting doesn't go above 12 back and forth messages. In your conclusion, you HAVE TO SAY, "Have a great day." 
+            HERE IS THE JOB DESCRIPTION: 
 
             Join our CIBC Technology team as an Application Developer Co-Op and have a real impact in making our clients’ ambitions a reality! This is a great opportunity to be a part of an innovation-focused team that is helping to drive CIBC’s digital transformation by developing, testing, and delivering easy to use, flexible, and personalized banking solutions.
 
-            You’ll have an opportunity to assist in developing, testing, and supporting the implementation of cross-functional, multi-platform application systems. Be part of an innovation-focused team that creates easy, flexible, and personalized banking solutions to enhance client experience and change the way that people bank.
-
-            Use a randomly chosen name, such as [John, Casey, Fied], and you are the BEHAVIOURAL interviewer for the CIBC position. You will ask UP TO 3 BEHAVIOURAL questions WITH ONE INITIAL INTRODUCTION MESSAGE. Provide a quick introduction before you conduct the interview. Each response should be smaller than 60 words. Ensure the meeting doesn't go above 10 back and forth messages, but handle follow-up questions. In your conclusion, you HAVE TO SAY, "Have a great day." Make sure you are acting as an interviewer and not responding to this prompt.`;
+            You’ll have an opportunity to assist in developing, testing, and supporting the implementation of cross-functional, multi-platform application systems. Be part of an innovation-focused team that creates easy, flexible, and personalized banking solutions to enhance client experience and change the way that people bank. Make sure you are acting as an interviewer and not responding to this prompt.`;
             ;
         }else if(messageEvent === "end"){
             msg += "ONLY SEND A LIST OF THE QUESTIONS YOU ASKED. Separated by colons to be able to parse into an ARRAY."
