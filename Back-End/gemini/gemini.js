@@ -23,10 +23,12 @@ export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, int
             Then expect to get a response from the interviewee and ask 1-2 technical questions and 1-2 behavioural questions. 
             YOU MUST RESPOND TO THE INTERVIEWEE AND ASK AT MOST 1 QUESTION AT A TIME REMEMBER YOU ARE AN INTERVIEWER DO NOT ANALYZE THE QUESTIONS.
             MAKE SURE TO ALWAYS ACT AS THE INTERVIEWER IN A CONVERSATIONAL TONE!
-            After a few back and forward messages in the chatlog ENSURE YOU END THE INTERVIEW WITH have a great day, or have a good day. 
-            FOR SOME CONTEXT BELOW WILL BE THE JOB DESCRIPTION: Pursuing a Bachelors program with a focus on subjects in software development or other technical related fields.
+            
+            Job Description: Pursuing a Bachelors program with a focus on subjects in software development or other technical related fields.
             Experience in Software Development and coding in one or more of the following: C/C++, Java, or Python.
             Experience with data structures or algorithms gathered from inside or outside of school or work.
+
+            After a few back and forward messages in the chatlog PLEASE PLEASE YOU MUST END THE INTERVIEW WITH have a great day, or have a good day. 
             `;
             ;
         }else if(messageEvent === "end"){
