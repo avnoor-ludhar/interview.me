@@ -8,6 +8,7 @@ import SignUp from './Pages/SignUp';
 import Home from './Pages/Home';
 import Meeting from './Pages/Meeting';
 import Results from './Pages/Results';
+import Intake from './Pages/Intake';
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from './redux/store';
 import { addUser, removeUser } from "@/redux/features/userSlice";
@@ -46,7 +47,7 @@ function App(): JSX.Element {
   }
 
   // Condition to hide Navbar for /home and /meeting routes
-  const hideNavbarRoutes = ['/home', '/meeting'];
+  const hideNavbarRoutes = ['/home', '/meeting', '/intake'];
   const shouldShowNavbar = !hideNavbarRoutes.includes(location.pathname);
 
   return (
@@ -59,6 +60,7 @@ function App(): JSX.Element {
             <Route path='/' element={!user ? <Landing /> : <Navigate to='/home' />} />
             <Route path='/signup' element={!user ? <SignUp /> : <Navigate to='/home' />} />
             <Route path='/home' element={user ? <Home /> : <Navigate to='/login' />} />
+            <Route path='/intake' element={user ? <Intake /> : <Navigate to='/login' />} />
             <Route path='/meeting' element={user ? <Meeting /> : <Navigate to='/login' />} />
             <Route path='/results' element={user ? <Results /> : <Navigate to='/login' />} />
           </Routes>

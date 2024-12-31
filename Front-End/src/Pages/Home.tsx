@@ -37,7 +37,7 @@ const Home = () => {
                 {/* Top Section */}
                 <div className="w-full text-white mb-6 text-left pl-40 flex justify-between items-center p-4">
                     <h2 className="text-2xl font-bold">Welcome Back {user?.email} 👋 </h2>
-                    <Button className="shadow-2xl shadow-indigo-500/50 mr-12" variant="outline">
+                    <Button className="shadow-2xl shadow-indigo-500/50 mr-12" variant="outline" onClick={() => navigate("/intake")}>
                         Begin Interview
                     </Button>
                 </div>

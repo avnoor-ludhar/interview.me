@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-
 import {
   ChartConfig,
   ChartContainer,
@@ -23,12 +22,13 @@ import {
 export const description = "A donut chart with text"
 
 const chartData = [
-  { browser: "1-3", visitors: 1.0, fill: "var(--color-chrome)" },
-  { browser: "4-5", visitors: 1.0, fill: "var(--color-safari)" },
-  { browser: "6-7", visitors: 1.0, fill: "var(--color-firefox)" },
-  { browser: "8-9", visitors: 1.0, fill: "var(--color-edge)" },
-  { browser: "10!", visitors: 1.0, fill: "var(--color-other)" },
-]
+  { browser: "1-3", visitors: 1.0, fill: "#FF6B6B" },
+  { browser: "4-5", visitors: 1.0, fill: "#FFA94D" },
+  { browser: "6-7", visitors: 1.0, fill: "#805AD5" },
+  { browser: "8-9", visitors: 1.0, fill: "#4FD1C5" },
+  { browser: "10!", visitors: 1.0, fill: "#3182CE" },
+];
+
 
 const chartConfig = {
   visitors: {
