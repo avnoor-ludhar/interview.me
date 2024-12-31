@@ -1,7 +1,6 @@
 import { useAppSelector } from "@/redux/store";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import * as React from "react";
 import { TrendingUp } from "lucide-react";
 import { Graph } from "../components/Graph";
 import { Area } from "../components/Area";
@@ -18,7 +17,7 @@ const Home = () => {
     }
 
     return (
-        <div className="h-screen flex justify-between items-start font-poppins">
+        <div className="h-screen flex justify-between items-start font-poppins mb-5">
             {/*<div className=" w-72 h-full p-4 bg-darkGray border-r-2 border-gray-800 align-items">
                 <div className="">
                     <h1 className="font-semibold mt-5"> Interview.me</h1>
@@ -36,7 +35,7 @@ const Home = () => {
             */}
             <div className="w-full h-full p-4 flex flex-col bg-night">
                 {/* Top Section */}
-                <div className="w-full p-4 text-white mb-6 text-left pl-40 flex justify-between items-center p-4">
+                <div className="w-full text-white mb-6 text-left pl-40 flex justify-between items-center p-4">
                     <h2 className="text-2xl font-bold">Welcome Back {user?.email} 👋 </h2>
                     <Button className="shadow-2xl shadow-indigo-500/50 mr-12" variant="outline">
                         Begin Interview
