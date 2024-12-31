@@ -22,7 +22,14 @@ const audioQueueSlice = createSlice({
         },
         popFromQueue: (state) => {
             // Remove the first item from the audioQueue array
-            state.audioQueue.shift();
+            state.prevChunkNumber = state.audioQueue[0].chunkNumber
+            if(state.audioQueue.length > 1 && state.audioQueue[1].chunkNumber == state.audioQueue[0].chunkNumber + 1){
+                state.playChunkFlag = true;
+            }else{
+                state.playChunkFlag = false;
+            }
+            
+            state.audioQueue = state.audioQueue.slice(1)
         },
         clearQueue: (state) => {
             // Reset to initial state values

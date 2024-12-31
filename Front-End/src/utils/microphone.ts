@@ -3,6 +3,9 @@ import { MediaStreamRecorderType } from "./types";
 async function getMicrophone(): Promise<null | MediaStreamRecorderType> {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      stream.getAudioTracks().forEach((track) => (track.enabled = false));
+
       if(!MediaRecorder.isTypeSupported('audio/webm')){
         return null;
       }
@@ -27,7 +30,7 @@ async function openMicrophone(microphone: MediaRecorder, socket: WebSocket, setI
       microphone.onstart = () => {
         console.log("WebSocket connection opened");
         console.log('Microphone active');
-        setIsRecording(true);
+        setIsRecording(false);
         resolve();
       };
   

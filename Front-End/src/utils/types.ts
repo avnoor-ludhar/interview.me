@@ -42,6 +42,8 @@ type audioQueueState = {
 type ChatLogState = {
     chatLog: speaker[],
     currentSpeaker: speaker;
+    prevChunkNumber: number;
+    queueForGemini: dataFromGemini[];
 }
 type WebSocketMessage = {
     chunk?: string;

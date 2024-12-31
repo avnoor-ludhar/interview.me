@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from "@/redux/store";
-import { setPrevChunkNumber, setPlayChunkFlag, popFromQueue} from "@/redux/features/audioQueueSlice"; //need to import the reducer
+import { popFromQueue} from "@/redux/features/audioQueueSlice"; //need to import the reducer
 
 const useAudioQueue = (setKillSocket: React.Dispatch<React.SetStateAction<boolean>>) => {
-    const {prevChunkNumber, playChunkFlag, audioQueue} = useAppSelector(state => state.audioQueue);
+    const {playChunkFlag, audioQueue} = useAppSelector(state => state.audioQueue);
     const {currentSpeaker} = useAppSelector(state => state.chatLog);
     const dispatch = useAppDispatch();
     const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
@@ -16,11 +16,6 @@ const useAudioQueue = (setKillSocket: React.Dispatch<React.SetStateAction<boolea
             audio.addEventListener('ended', () => {
                 dispatch(popFromQueue());
                 setCurrentAudio(null);
-                dispatch(setPrevChunkNumber(nextAudioUrl.chunkNumber));
-    
-                if (audioQueue.length > 1 && audioQueue[1].chunkNumber !== (prevChunkNumber + 1)) {
-                    dispatch(setPlayChunkFlag(false));
-                }
             });
     
             setCurrentAudio(audio);
@@ -30,7 +25,7 @@ const useAudioQueue = (setKillSocket: React.Dispatch<React.SetStateAction<boolea
 
     useEffect(() => {
         // Re-run every time `currentSpeaker` changes
-        if (audioQueue.length === 0 && currentAudio === null) {
+        if (audioQueue.length === 0 && currentAudio === null && currentSpeaker.speaker == "Gemini") {
             const textToCheckEnd = currentSpeaker.text.toLowerCase().replace(/ /g, "");
             if (textToCheckEnd.includes("haveagreatday") || textToCheckEnd.includes("haveagoodday") || textToCheckEnd.includes("haveawonderfulday")) {
                 setKillSocket(true);

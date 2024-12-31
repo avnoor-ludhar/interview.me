@@ -15,9 +15,7 @@ export const convertTextToSpeech = async (data: dataFromGemini, dispatch: AppDis
         const audioBuffer = Uint8Array.from(atob(dataFromTTS.audio), c => c.charCodeAt(0)).buffer;
         const audioBlob = new Blob([audioBuffer], { type: 'audio/wav' });
         const audioUrl = URL.createObjectURL(audioBlob);
-        console.log(audioUrl)
-        console.log(dataFromTTS.chunkNumber)
-        
+
         dispatch(addToQueue({chunkNumber: dataFromTTS.chunkNumber, audio: audioUrl, chunkText: data.chunk}));
     } catch (error) {
         console.error('Error converting text to speech:', error);

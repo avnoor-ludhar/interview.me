@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AppDispatch, RootState } from '@/redux/store';
-import { updateSpeaker, updateChatLog, appendToCurrentSpeakerText } from './chatLogSlice';
+import { updateSpeaker, updateChatLog, appendToCurrentSpeakerText, appendToCurrentSpeakerTextGemini } from './chatLogSlice';
 import { setPrevChunkNumber } from './audioQueueSlice';
 import { dataFromGemini, WebSocketMessage } from '@/utils/types';
 
@@ -12,7 +12,6 @@ export const handleWebSocketThunk = createAsyncThunk<void, WebSocketMessage, { s
     'chatLog/handleWebSocketMessage',
     async (data, { dispatch, getState }) => {
         const { currentSpeaker } = getState().chatLog;
-        console.log(data);
 
         if (isDataFromGemini(data)) {
             if (currentSpeaker.speaker === "User") {
@@ -21,11 +20,10 @@ export const handleWebSocketThunk = createAsyncThunk<void, WebSocketMessage, { s
                 dispatch(updateChatLog());
 
                 // Then, set the new speaker data for "Gemini" with the new chunk
-                dispatch(updateSpeaker({ speaker: "Gemini", text: data.chunk }));
-            } else {
-                // If the current speaker is Gemini, append chunk to current text
-                dispatch(appendToCurrentSpeakerText(data.chunk));
+                dispatch(updateSpeaker({ speaker: "Gemini", text: '' }));
             }
+            dispatch(appendToCurrentSpeakerTextGemini(data));
+            
         } else if (data.transcript) {
             if (currentSpeaker.speaker === "Gemini" && data.transcript !== '') {
                 // Add Gemini's last response to the chat log

@@ -186,9 +186,8 @@ const refreshToken = async (req, res) =>{
         });
 
         return res.status(200).json({accessToken: newAccessToken});
-        
     } catch(error){
-        console.log(error);
+        return res.status(404).json({error: "Refresh token expired!"});
     }
 }
 

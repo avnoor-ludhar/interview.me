@@ -201,8 +201,7 @@ wss.on('connection', (ws, req) => {
                     }catch(error){
                         console.log("error fetching data: ", error.message);
                     }
-                    const introMessage = await askAndrespond(chat, ws.globalMessage, ws, "intro", ws.chunkCount);
-                    ws.send(introMessage);
+                    await askAndrespond(chat, ws.globalMessage, ws, "intro", ws.chunkCount);
                 } else if(parsedMessage.type == 'Gemini_Interupted'){
                     //interuption flag so that we can fire this type of message from the backend
                     ws.interupted = parsedMessage.chunkText;

@@ -2,7 +2,7 @@ import './App.css';
 import { ThemeProvider } from "@/components/theme-provider";
 import Login from './Pages/Login';
 import Landing from './Pages/Landing';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from '@/components/navbar';
 import SignUp from './Pages/SignUp';
 import Home from './Pages/Home';
@@ -33,8 +33,9 @@ function App(): JSX.Element {
       } catch (error) {
         console.error('No active session');
         dispatch(removeUser());
+      }finally{
+        setIsUserChecked(true);
       }
-      setIsUserChecked(true);
     };
     checkSession();
   }, [dispatch]);
