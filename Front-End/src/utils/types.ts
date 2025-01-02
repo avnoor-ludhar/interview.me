@@ -53,13 +53,16 @@ type WebSocketMessage = {
 type InterviewerType = {name: string, model: string}
 
 type MeetingState = {
-    fromIntake: boolean;
+    fromIntake?: boolean;
     firstName: string;
     lastName: string;
     jobType: string;
     position: string;
     jobDescription: string;
-    interviewer: InterviewerType;
+    interviewer?: InterviewerType;
+    companyName: string;
+    university: string;
+    major: string;
 }
 
 export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType};

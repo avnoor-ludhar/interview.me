@@ -2,7 +2,7 @@ import { InterviewerType } from "@/utils/types";
 import Message from "./Message";
 import { useAppSelector } from "@/redux/store";
 
-const Chat = ({interviewer}:{interviewer: InterviewerType}) =>{
+const Chat = ({interviewer}:{interviewer: InterviewerType | undefined}) =>{
     const {chatLog, currentSpeaker} = useAppSelector(state => state.chatLog);
     const interviewerName = interviewer?.name.split("(")[0];
 

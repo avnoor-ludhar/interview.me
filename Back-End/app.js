@@ -162,12 +162,6 @@ wss.on('connection', (ws, req) => {
                 //kills connectin with deepgram
                 if (parsedMessage.type === 'end_deepgram_session') {
                     console.log("socket: received end session message");
-                    // let questions = await askAndrespond(chat, ws.globalMessage, ws, "end", ws.chunkCount);
-                    // questions = questions.split(":").slice(1)
-                    // console.log(questions);
-                    // for(const chat of parsedMessage.chatLog){
-                    //     console.log(chat);
-                    // }
 
                     try{
                         const { data } = await axios.post("http://localhost:8080/api/interview/endInterview",
@@ -199,14 +193,11 @@ wss.on('connection', (ws, req) => {
                         ws.interviewId = data.interviewId;
                         ws.send(JSON.stringify({ type: 'interviewId', interviewId: ws.interviewId }));
                         
-                        await askAndrespond(chat, ws.globalMessage, ws, "intro", ws.chunkCount);
+                        await askAndrespond(chat, ws.globalMessage, ws, "intro", ws.chunkCount, parsedMessage);
                     }catch(error){
                         console.log("error fetching data: ", error.message);
                     }
                     
-                } else if(parsedMessage.type == 'Gemini_Interupted'){
-                    //interuption flag so that we can fire this type of message from the backend
-                    ws.interupted = parsedMessage.chunkText;
                 }
             } catch (e) {
                 console.log(e.message);

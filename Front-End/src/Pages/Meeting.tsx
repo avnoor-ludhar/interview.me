@@ -45,7 +45,7 @@ export default function Meeting(): JSX.Element{
     const { currentAudio, setCurrentAudio } = useAudioQueue( setKillSocket);
     
     const handleWebSocketMessage = async (data: any)=>{
-        if(data.chunk){
+        if(data.chunk && state.interviewer){
             await convertTextToSpeech(data, dispatch, state.interviewer.model);
         }
         dispatch(handleWebSocketThunk(data));
@@ -74,10 +74,10 @@ export default function Meeting(): JSX.Element{
     useEffect(() =>{
         if (!user) {
             navigate('/');
-        }else if (!state.fromIntake) {
+        }else if (!state?.fromIntake) {
             navigate("/home");
         }
-    }, [user, state.fromIntake]);
+    }, [user, state?.fromIntake]);
     
 
     useEffect(() =>{
@@ -138,7 +138,7 @@ export default function Meeting(): JSX.Element{
         <div className="h-[100vh] w-[100vw] absolute top-0 left-0 bg-black z-10">
             <div className="w-full h-full grid grid-cols-[1.5fr_1.5fr_1fr] grid-rows-[0.87fr_0.13fr]">
                 <Video videoRef={videoRef} stopVideo={stopVideo} startVideo={startVideo}/>
-                <Chat interviewer={state.interviewer}/>
+                <Chat interviewer={state?.interviewer}/>
                 <MeetingOptions isConnected={isConnected} handleRecord={handleRecord} stopVideo={stopVideo} startVideo={startVideo} isVideoOn={isVideoOn} isRecording={isRecording} toggleMute={toggleMute} currentSpeaker={currentSpeaker} />
             </div>
         </div>

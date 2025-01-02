@@ -22,8 +22,8 @@ const useWebSocket = (handleWebSocketMessage: (data: any) => void, microphoneRef
 
         socketRef.current.addEventListener('open', async () =>{
             console.log("WebSocket connection opened");
-            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                socketRef.current.send(JSON.stringify({ type: 'start_deepgram_session', firstName: state.firstName, lastName: state.lastName, jobDescription: state.jobDescription, jobType: state.jobType, position: state.position }));
+            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN && state.interviewer) {
+                socketRef.current.send(JSON.stringify({ type: 'start_deepgram_session', firstName: state.firstName, lastName: state.lastName, jobDescription: state.jobDescription, jobType: state.jobType, position: state.position, interviewerName: state.interviewer.name.split("(")[0], companyName: state.companyName}));
                 setIsConnected(true);
             } else {
                 console.error("WebSocket is not open or 'this' is not the WebSocket instance.");
