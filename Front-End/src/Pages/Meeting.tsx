@@ -29,15 +29,7 @@ useEffect should be last option.
 export default function Meeting(): JSX.Element{
     const location = useLocation();
     const navigate = useNavigate();
-    const {
-        firstName,
-        lastName,
-        jobType,
-        position,
-        jobDescription,
-        interviewer,
-        fromIntake
-    } = (location.state as MeetingState) || {};
+    const state = (location.state as MeetingState);
     //used to hold the transcription for the current speaker and the transcription
     const {currentSpeaker, chatLog} = useAppSelector(state => state.chatLog);
     const user = useAppSelector(state=>state.user.user);
@@ -54,12 +46,12 @@ export default function Meeting(): JSX.Element{
     
     const handleWebSocketMessage = async (data: any)=>{
         if(data.chunk){
-            await convertTextToSpeech(data, dispatch);
+            await convertTextToSpeech(data, dispatch, state.interviewer.model);
         }
         dispatch(handleWebSocketThunk(data));
     }
 
-    const { connect, disconnect, isConnected, socketRef, interviewId }: UseWebSocketHook = useWebSocket(handleWebSocketMessage, microphoneRef, streamRef, setIsRecording);
+    const { connect, disconnect, isConnected, socketRef, interviewId }: UseWebSocketHook = useWebSocket(handleWebSocketMessage, microphoneRef, streamRef, setIsRecording, state);
     const {videoRef, stopVideo, startVideo, isVideoOn} = useVideo();
 
     const toggleMute = ()=>{
@@ -82,10 +74,10 @@ export default function Meeting(): JSX.Element{
     useEffect(() =>{
         if (!user) {
             navigate('/');
-        }else if (!fromIntake) {
+        }else if (!state.fromIntake) {
             navigate("/home");
         }
-    }, [user, fromIntake]);
+    }, [user, state.fromIntake]);
     
 
     useEffect(() =>{
@@ -146,7 +138,7 @@ export default function Meeting(): JSX.Element{
         <div className="h-[100vh] w-[100vw] absolute top-0 left-0 bg-black z-10">
             <div className="w-full h-full grid grid-cols-[1.5fr_1.5fr_1fr] grid-rows-[0.87fr_0.13fr]">
                 <Video videoRef={videoRef} stopVideo={stopVideo} startVideo={startVideo}/>
-                <Chat interviewer={interviewer}/>
+                <Chat interviewer={state.interviewer}/>
                 <MeetingOptions isConnected={isConnected} handleRecord={handleRecord} stopVideo={stopVideo} startVideo={startVideo} isVideoOn={isVideoOn} isRecording={isRecording} toggleMute={toggleMute} currentSpeaker={currentSpeaker} />
             </div>
         </div>

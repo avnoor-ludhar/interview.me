@@ -1,13 +1,12 @@
-import { models } from "@/assets/models";
 import { dataFromGemini, bodyTTS, audioDataFromTTS } from "./types";
 import { AxiosResponse } from "axios";
 import { AppDispatch } from '@/redux/store'; 
 import api from "@/lib/axios";
 import { addToQueue } from "@/redux/features/audioQueueSlice";
 
-export const convertTextToSpeech = async (data: dataFromGemini, dispatch: AppDispatch) => {
+export const convertTextToSpeech = async (data: dataFromGemini, dispatch: AppDispatch, model: string) => {
     try {
-        const body: bodyTTS = {text: data.chunk, chunkNumber: data.chunkNumber,  model: models[1].model};
+        const body: bodyTTS = {text: data.chunk, chunkNumber: data.chunkNumber,  model: model};
         const response: AxiosResponse = await api.post('/api/interview/tts', body, {
             responseType: 'text'
         });
