@@ -14,32 +14,48 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { models } from "@/assets/models";
 
 function Intake(): JSX.Element {
+  const [page, setPage] = useState(1);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [jobType, setJobType] = useState("");
   const [position, setPosition] = useState("");
   const [jobDescription, setJobDescription] = useState("");
+  const [interviewer, setInterviewer] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    // Error handling for empty fields
+  const validatePage1 = () => {
     if (!firstName || !lastName || !jobType || !position || !jobDescription) {
-      setError("Please fill out all fields before submitting.");
-      return;
+      setError("Please fill out all fields on this page.");
+      return false;
     }
-
-    // Error handling for Job Description character limit
-    if (jobDescription.length > 300) {
-      setError("Job description must not exceed 300 characters.");
-      return;
-    }
-
-    // Reset error and proceed
     setError(null);
-    console.log({ firstName, lastName, jobType, position, jobDescription });
+    return true;
+  };
+
+  const validatePage2 = () => {
+    if (!interviewer) {
+      setError("Please select an interviewer.");
+      return false;
+    }
+    setError(null);
+    return true;
+  };
+
+  const handleSubmit = () => {
+    if (!validatePage2()) return;
+
+    console.log({
+      firstName,
+      lastName,
+      jobType,
+      position,
+      jobDescription,
+      interviewer,
+    });
   };
 
   return (
@@ -56,86 +72,143 @@ function Intake(): JSX.Element {
       </div>
       <div className="flex flex-col items-center justify-start w-full">
         <Card className="lg:w-[600px] p-6 pb-0">
-          <CardHeader>
-            <CardTitle>Job Information Form</CardTitle>
-            <CardDescription>
-              Please provide your details below to help us specialize your interview
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {/* First Name and Last Name */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="first-name">First Name</Label>
-                  <Input
-                    id="first-name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    maxLength={50}
-                    placeholder="John"
-                  />
+          {/* Progress Indicator */}
+          <div className="flex space-x-3 mb-4 w-full items-center justify-center">
+            <div
+              className={`h-3 w-3 rounded-full ${page === 1 ? "bg-indigo-500/50" : "bg-gray-300"}`}
+            ></div>
+            <div
+              className={`h-3 w-3 rounded-full ${page === 2 ? "bg-indigo-500/50" : "bg-gray-300"}`}
+            ></div>
+          </div>
+          {page === 1 && (
+            <>
+              <CardHeader>
+                <CardTitle>Job Information Form</CardTitle>
+                <CardDescription>
+                  Please provide your details below to help us specialize your interview
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  {/* First Name and Last Name */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor="first-name">First Name</Label>
+                      <Input
+                        id="first-name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        maxLength={50}
+                        placeholder="John"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor="last-name">Last Name</Label>
+                      <Input
+                        id="last-name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        maxLength={50}
+                        placeholder="Doe"
+                      />
+                    </div>
+                  </div>
+                  {/* Job Type */}
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="job-type">Job Type</Label>
+                    <Select value={jobType} onValueChange={setJobType}>
+                      <SelectTrigger id="job-type">
+                        <SelectValue placeholder="Select a job type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="full-time">Full-Time</SelectItem>
+                        <SelectItem value="part-time">Part-Time</SelectItem>
+                        <SelectItem value="internship">Internship</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* Position */}
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="position">Position</Label>
+                    <Input
+                      id="position"
+                      value={position}
+                      onChange={(e) => setPosition(e.target.value)}
+                      maxLength={100}
+                      placeholder="e.g., Software Engineer"
+                    />
+                  </div>
+                  {/* Job Description */}
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="job-description">Job Description</Label>
+                    <Textarea
+                      id="job-description"
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      maxLength={300}
+                      placeholder="Briefly describe the job (max 300 characters)."
+                      className="resize-none"
+                    />
+                    <p className="text-right text-sm text-gray-500">
+                      {jobDescription.length}/300
+                    </p>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="last-name">Last Name</Label>
-                  <Input
-                    id="last-name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    maxLength={50}
-                    placeholder="Doe"
-                  />
+              </CardContent>
+            </>
+          )}
+
+          {page === 2 && (
+            <>
+              <CardHeader>
+                <CardTitle>Interviewer Selection</CardTitle>
+                <CardDescription>
+                  Select the interviewer for this position
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="interviewer">Interviewer Name</Label>
+                    <Select value={interviewer} onValueChange={setInterviewer}>
+                      <SelectTrigger id="interviewer">
+                        <SelectValue placeholder="Select an interviewer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {models.map((model) => (
+                          <SelectItem key={model.model} value={model.model}>
+                            {model.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
+              </CardContent>
+            </>
+          )}
 
-              {/* Job Type */}
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="job-type">Job Type</Label>
-                <Select onValueChange={setJobType}>
-                  <SelectTrigger id="job-type">
-                    <SelectValue placeholder="Select a job type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="full-time">Full-Time</SelectItem>
-                    <SelectItem value="part-time">Part-Time</SelectItem>
-                    <SelectItem value="internship">Internship</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Position */}
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="position">Position</Label>
-                <Input
-                  id="position"
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value)}
-                  maxLength={100}
-                  placeholder="e.g., Software Engineer"
-                />
-              </div>
-
-              {/* Job Description */}
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="job-description">Job Description</Label>
-                <Textarea
-                  id="job-description"
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  maxLength={300}
-                  placeholder="Briefly describe the job (max 300 characters)."
-                  className="resize-none"
-                />
-                <p className="text-right text-sm text-gray-500">
-                  {jobDescription.length}/300
-                </p>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" onClick={handleSubmit}>
-              Submit Application
-            </Button>
+          <CardFooter className="flex justify-between">
+            {page > 1 && (
+              <Button variant="outline" onClick={() => setPage(page - 1)}>
+                Back
+              </Button>
+            )}
+            {page < 2 ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (validatePage1()) setPage(page + 1);
+                }}
+              >
+                Next
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={handleSubmit}>
+                Submit Information
+              </Button>
+            )}
           </CardFooter>
         </Card>
         {error && <AlertDestructive error={error} />}
