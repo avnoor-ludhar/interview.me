@@ -17,7 +17,7 @@ const Home = () => {
     }
 
     return (
-        <div className="h-screen flex justify-between items-start font-poppins mb-5">
+        <div className="h-screen flex justify-between items-start font-poppins">
             {/*<div className=" w-72 h-full p-4 bg-darkGray border-r-2 border-gray-800 align-items">
                 <div className="">
                     <h1 className="font-semibold mt-5"> Interview.me</h1>
@@ -77,7 +77,7 @@ const Home = () => {
                         </ul>
                     </div>
                     {/* Card 5 */}
-                    <div className="w-full md:w-1/3 lg:w-1/4 p-4 bg-darkGray rounded-3xl drop-shadow-2xl h-[300px] border-2 mr-24">
+                    <div className="w-full md:w-1/3 lg:w-1/4 p-4 bg-darkGray rounded-3xl drop-shadow-2xl h-[300px] border-2 mr-24 mb-5">
                         <h3 className="font-bold text-white">Data Point 5</h3>
                         <p className="text-white text-sm">Description or value here.</p>
                     </div>
