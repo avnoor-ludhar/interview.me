@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { models } from "@/assets/models";
+import { InterviewerType } from "@/utils/types";
 
 function Intake(): JSX.Element {
   const [page, setPage] = useState(1);
@@ -23,7 +24,7 @@ function Intake(): JSX.Element {
   const [jobType, setJobType] = useState("");
   const [position, setPosition] = useState("");
   const [jobDescription, setJobDescription] = useState("");
-  const [interviewer, setInterviewer] = useState("");
+  const [interviewer, setInterviewer] = useState<InterviewerType | null>(null); // Store both model and name
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -48,16 +49,26 @@ function Intake(): JSX.Element {
   const handleSubmit = () => {
     if (!validatePage2()) return;
 
-    console.log({
-      firstName,
-      lastName,
-      jobType,
-      position,
-      jobDescription,
-      interviewer,
+    navigate("/meeting", {
+      state: {
+        firstName,
+        lastName,
+        jobType,
+        position,
+        jobDescription,
+        interviewer, // Contains both model and name
+        fromIntake: true,
+      },
     });
   };
 
+  const handleValueChange = (value: string) =>{
+    const selectedModel = models.find((model) => model.model === value);
+    if (selectedModel) {
+      setInterviewer(selectedModel);
+    }
+  }
+  
   return (
     <>
       <div className="w-full text-white text-left pl-40 flex justify-between items-center h-24 p-8">
@@ -171,7 +182,10 @@ function Intake(): JSX.Element {
                 <div className="grid gap-4">
                   <div className="flex flex-col gap-1">
                     <Label htmlFor="interviewer">Interviewer Name</Label>
-                    <Select value={interviewer} onValueChange={setInterviewer}>
+                    <Select
+                      value={interviewer?.model || ""}
+                      onValueChange={(value) => handleValueChange(value)}
+                    >
                       <SelectTrigger id="interviewer">
                         <SelectValue placeholder="Select an interviewer" />
                       </SelectTrigger>

@@ -24,7 +24,7 @@ function App(): JSX.Element {
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.user.user);
   const [isUserChecked, setIsUserChecked] = useState(false);
-  const location = useLocation(); // Get the current route location
+  const location = useLocation();
 
   useEffect(() => {
     const checkSession = async () => {
@@ -35,7 +35,7 @@ function App(): JSX.Element {
       } catch (error) {
         console.error('No active session');
         dispatch(removeUser());
-      }finally{
+      } finally {
         setIsUserChecked(true);
       }
     };
@@ -46,7 +46,6 @@ function App(): JSX.Element {
     return <div>Loading...</div>; // or any other loading indicator
   }
 
-  // Condition to hide Navbar for /home and /meeting routes
   const hideNavbarRoutes = ['/home', '/meeting', '/intake'];
   const shouldShowNavbar = !hideNavbarRoutes.includes(location.pathname);
 
@@ -54,14 +53,17 @@ function App(): JSX.Element {
     <>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <div className='absolute left-0 top-0 w-full'>
-          {shouldShowNavbar && <Navbar />} {/* Conditionally render Navbar */}
+          {shouldShowNavbar && <Navbar />}
           <Routes>
             <Route path='/login' element={!user ? <Login /> : <Navigate to='/home' />} />
             <Route path='/' element={!user ? <Landing /> : <Navigate to='/home' />} />
             <Route path='/signup' element={!user ? <SignUp /> : <Navigate to='/home' />} />
             <Route path='/home' element={user ? <Home /> : <Navigate to='/login' />} />
             <Route path='/intake' element={user ? <Intake /> : <Navigate to='/login' />} />
-            <Route path='/meeting' element={user ? <Meeting /> : <Navigate to='/login' />} />
+            <Route
+              path='/meeting'
+              element={user ? <Meeting /> : <Navigate to='/login' />}
+            />
             <Route path='/results' element={user ? <Results /> : <Navigate to='/login' />} />
           </Routes>
         </div>

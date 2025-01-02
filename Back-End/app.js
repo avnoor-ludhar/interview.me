@@ -198,10 +198,12 @@ wss.on('connection', (ws, req) => {
                         });
                         ws.interviewId = data.interviewId;
                         ws.send(JSON.stringify({ type: 'interviewId', interviewId: ws.interviewId }));
+                        
+                        await askAndrespond(chat, ws.globalMessage, ws, "intro", ws.chunkCount);
                     }catch(error){
                         console.log("error fetching data: ", error.message);
                     }
-                    await askAndrespond(chat, ws.globalMessage, ws, "intro", ws.chunkCount);
+                    
                 } else if(parsedMessage.type == 'Gemini_Interupted'){
                     //interuption flag so that we can fire this type of message from the backend
                     ws.interupted = parsedMessage.chunkText;

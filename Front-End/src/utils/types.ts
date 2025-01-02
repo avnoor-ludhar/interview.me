@@ -50,4 +50,16 @@ type WebSocketMessage = {
     transcript?: string;
 }
 
-export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage};
+type InterviewerType = {name: string, model: string} | null
+
+type MeetingState = {
+    fromIntake?: boolean;
+    firstName?: string;
+    lastName?: string;
+    jobType?: string;
+    position?: string;
+    jobDescription?: string;
+    interviewer?: InterviewerType;
+}
+
+export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType};

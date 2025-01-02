@@ -1,7 +1,7 @@
 import { useAppSelector } from "@/redux/store";
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { UseWebSocketHook } from "@/utils/types";
+import { useNavigate, useLocation } from "react-router-dom";
+import { MeetingState, UseWebSocketHook } from "@/utils/types";
 import useWebSocket from "@/hooks/useWebSocket";
 import useAudioQueue from "@/hooks/useAudioQueue";
 import { useAppDispatch } from "@/redux/store";
@@ -27,6 +27,17 @@ useEffect should be last option.
 */
 
 export default function Meeting(): JSX.Element{
+    const location = useLocation();
+    const navigate = useNavigate();
+    const {
+        firstName,
+        lastName,
+        jobType,
+        position,
+        jobDescription,
+        interviewer,
+        fromIntake
+    } = (location.state as MeetingState) || {};
     //used to hold the transcription for the current speaker and the transcription
     const {currentSpeaker, chatLog} = useAppSelector(state => state.chatLog);
     const user = useAppSelector(state=>state.user.user);
@@ -36,13 +47,10 @@ export default function Meeting(): JSX.Element{
     //ref variable to hold the microphone
     const microphoneRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
-    
-    const navigate = useNavigate();
     const [killSocket, setKillSocket] = useState(false);
     //custom hook to keep track of all the functionality related to the audio queue
     
     const { currentAudio, setCurrentAudio } = useAudioQueue( setKillSocket);
-
     
     const handleWebSocketMessage = async (data: any)=>{
         if(data.chunk){
@@ -70,11 +78,15 @@ export default function Meeting(): JSX.Element{
             connect(import.meta.env.VITE_WEBSOCKET_URL);
         }
     }
-    useEffect(() => {
+
+    useEffect(() =>{
         if (!user) {
             navigate('/');
+        }else if (!fromIntake) {
+            navigate("/home");
         }
-    }, [user]);
+    }, [user, fromIntake]);
+    
 
     useEffect(() =>{
         if((currentAudio && isRecording) || (!currentAudio && !isRecording)){
@@ -134,7 +146,7 @@ export default function Meeting(): JSX.Element{
         <div className="h-[100vh] w-[100vw] absolute top-0 left-0 bg-black z-10">
             <div className="w-full h-full grid grid-cols-[1.5fr_1.5fr_1fr] grid-rows-[0.87fr_0.13fr]">
                 <Video videoRef={videoRef} stopVideo={stopVideo} startVideo={startVideo}/>
-                <Chat />
+                <Chat interviewer={interviewer}/>
                 <MeetingOptions isConnected={isConnected} handleRecord={handleRecord} stopVideo={stopVideo} startVideo={startVideo} isVideoOn={isVideoOn} isRecording={isRecording} toggleMute={toggleMute} currentSpeaker={currentSpeaker} />
             </div>
         </div>
