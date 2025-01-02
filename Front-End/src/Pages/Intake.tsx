@@ -57,9 +57,9 @@ function Intake(): JSX.Element {
       <div className="flex flex-col items-center justify-start w-full">
         <Card className="lg:w-[600px] p-6 pb-0">
           <CardHeader>
-            <CardTitle>Job Application Form</CardTitle>
+            <CardTitle>Job Information Form</CardTitle>
             <CardDescription>
-              Please provide your details below to apply for a position.
+              Please provide your details below to help us specialize your interview
             </CardDescription>
           </CardHeader>
           <CardContent>
