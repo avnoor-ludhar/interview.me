@@ -22,7 +22,10 @@ export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, par
             YOU MUST HAVE AN INTRODUCTION MESSAGE WHICH MUST BE THE RESPONSE TO THIS PROMPT, this should be opening the interview to a REAL PERSON named ${parsedMessage.firstName} ${parsedMessage.lastName}.
             Then expect to get a response from the interviewee and ask 1-2 technical questions and 1-2 behavioural questions. 
             YOU MUST RESPOND TO THE INTERVIEWEE AND ASK AT MOST 1 QUESTION AT A TIME REMEMBER YOU ARE AN INTERVIEWER DO NOT ANALYZE THE QUESTIONS.
+
             MAKE SURE TO ALWAYS ACT AS THE INTERVIEWER IN A CONVERSATIONAL TONE AND DO NOT ASSUME INFORMATION ON THE INTERVIEWEE.
+
+            ENSURE YOU WAIT FOR A RESPONSE FROM THE QUESTION BEFORE YOU END THE INTERVIEW.
             
             Job Description: ${parsedMessage.jobDescription}
 

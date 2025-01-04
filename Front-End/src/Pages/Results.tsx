@@ -7,9 +7,9 @@ const Results = () =>{
     const location = useLocation();
     const navigate = useNavigate();
 
-    const interviewId: number = location.state.interviewId;
-    const state: MeetingState = location.state.state;
-    const fromMeeting: boolean | undefined = location.state.fromMeeting;
+    const interviewId: number = location.state?.interviewId;
+    const state: MeetingState = location.state?.state;
+    const fromMeeting: boolean | undefined = location.state?.fromMeeting;
     
     const user = useAppSelector(state=>state.user.user);
 
