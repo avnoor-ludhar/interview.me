@@ -1,3 +1,9 @@
+CREATE TABLE user(
+    id SERIAL PRIMARY KEY,
+    email citext,
+    password_hash VARCHAR(512)
+);
+
 CREATE TABLE Interviews(
 	id SERIAL PRIMARY KEY,
 	user_id INTEGER REFERENCES users(id),
@@ -10,8 +16,7 @@ CREATE TABLE Interviews(
 CREATE TABLE QAOfInterview(
     id SERIAL PRIMARY KEY,
     interview_id INTEGER REFERENCES Interviews(id),
-    question VARCHAR(512),
-    transcriptionAnswer TEXT
+    chat TEXT
 );
 
 CREATE TABLE refresh_tokens (
