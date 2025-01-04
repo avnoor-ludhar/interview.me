@@ -1,3 +1,9 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    password_hash VARCHAR(512) NOT NULL,
+    email CITEXT UNIQUE NOT NULL
+);
+
 CREATE TABLE Interviews(
 	id SERIAL PRIMARY KEY,
 	user_id INTEGER REFERENCES users(id),
