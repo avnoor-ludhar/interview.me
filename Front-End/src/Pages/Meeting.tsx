@@ -90,7 +90,13 @@ export default function Meeting(): JSX.Element{
     useEffect(() => {
         // Navigate to results page
         if(killSocket){
-            navigate("/results");
+            navigate("/results", {
+                state: {
+                    interviewId,
+                    state,
+                    fromMeeting: true
+                }
+            });
         }
         
     
