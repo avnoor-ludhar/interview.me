@@ -10,6 +10,7 @@ CREATE TABLE Interviews(
     typeOfInterview VARCHAR(252),
 	institution VARCHAR(252),
     score INTEGER,
+    feedback VARCHAR(252)
     CONSTRAINT score_check CHECK (score >= 1 AND score <= 10)
 );
 

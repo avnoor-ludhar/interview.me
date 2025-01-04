@@ -141,11 +141,14 @@ export default function Meeting(): JSX.Element{
     }, [killSocket]);
     
     return (
-        <div className="h-[100vh] w-[100vw] absolute top-0 left-0 bg-black z-10">
-            <div className="w-full h-full grid grid-cols-[1.5fr_1.5fr_1fr] grid-rows-[0.87fr_0.13fr]">
-                <Video videoRef={videoRef} stopVideo={stopVideo} startVideo={startVideo}/>
-                <Chat interviewer={state?.interviewer}/>
+        <div className="h-[100vh] w-[100vw] absolute top-0 left-0 z-10">
+            <div className="w-full h-4 flex flex-row justify-between items-center p-8">
+                <p className="font-bold text-lg">InterviewME</p>
+            </div>
+            <div className="w-full h-[calc(100vh-100px)] flex flex-row items-center justify-between px-10 py-6">
+                <Video videoRef={videoRef} stopVideo={stopVideo} startVideo={startVideo} isRecording={isRecording}/>
                 <MeetingOptions isConnected={isConnected} handleRecord={handleRecord} stopVideo={stopVideo} startVideo={startVideo} isVideoOn={isVideoOn} isRecording={isRecording} toggleMute={toggleMute} currentSpeaker={currentSpeaker} />
+                {/* <Chat interviewer={state?.interviewer}/> */}
             </div>
         </div>
         )
