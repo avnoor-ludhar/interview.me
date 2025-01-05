@@ -26,3 +26,6 @@ CREATE TABLE refresh_tokens (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_used TIMESTAMP
 );
+
+ALTER TABLE interview
+ADD COLUMN feedback TEXT;

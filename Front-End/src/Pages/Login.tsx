@@ -45,7 +45,7 @@ function Login(): JSX.Element {
     const handleClick = async () =>{
         try{
             const formInput:formData = {email: email, password: password};
-
+            console.log("Boom");
             const response: AxiosResponse = await api.post('/api/user/login', formInput);
             const dataFromAPI: responseData = response.data;
             

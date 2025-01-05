@@ -76,34 +76,13 @@ const textToSpeechDeepgram = async (req, res) => {
 // Function to evaluate interview
 const evaluateInterview = async (chatLog) => {
   try {
-    const scorePrompt = `
-      You will be provided with a text transcription based on an interview. The criteria is STAR method. 
-      Provide ONLY A SCORE FROM 1-10 IN THIS EXACT FORMAT.
-      Grade: X/10
-      Here is the interview transcription:
-      ${JSON.stringify(chatLog)}
-    `;
-
-    const scoreRequest = {
-      contents: [{ role: 'user', parts: [{ text: scorePrompt }] }],
-    };
-
-    const scoreResult = await generativeModel.generateContent(scoreRequest);
-    const scoreFeedback = scoreResult.response.candidates[0].content.parts[0].text;
-
-    const scoreMatch = scoreFeedback.match(/Grade:\s*(\d{1,2})/);
-    const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
-
-    if (score === null || isNaN(score)) {
-      console.error("Could not extract score.");
-      return { error: "Failed to extract score." };
-    }
-
     const feedbackPrompt = `
       You will be provided with a text transcription based on an interview. The criteria is STAR method. 
       Provide detailed feedback based on a rubric you will create and deem fit for an interview. 
       State specifically what the user did incorrectly for each section of the rubric, and provide a mock 
-      answer that is well done. Include suggestions for improvement.
+      answer that is well done. Include suggestions for improvement. Do not send the rubric, just keep it mentally you should not be able to see it. 
+      Please also provide the 1-10 score in a large bold font, it should be the first thing you see, and large. Be more brief, and when you write the score write Grade: X/10. 
+      Don't write the word feedback, just write the feedback
 
       Here is the interview transcription:
       ${JSON.stringify(chatLog)}
@@ -115,6 +94,15 @@ const evaluateInterview = async (chatLog) => {
 
     const feedbackResult = await generativeModel.generateContent(feedbackRequest);
     const detailedFeedback = feedbackResult.response.candidates[0].content.parts[0].text;
+
+    // Extract score directly from the feedback
+    const scoreMatch = detailedFeedback.match(/Grade:\s*(\d{1,2})/);
+    const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
+
+    if (score === null || isNaN(score)) {
+      console.error("Could not extract score.");
+      return { error: "Failed to extract score." };
+    }
 
     return {
       score: score,
@@ -136,8 +124,8 @@ const endInterview = async (req, res) => {
 
   try {
     const { rows } = await db.query(
-      "INSERT INTO QAOfInterview (interview_id, chat) VALUES ($1, $2) RETURNING *", 
-      [interviewId, JSON.stringify(chatLog)]
+      "INSERT INTO QAOfInterview (interview_id, chat, feedback) VALUES ($1, $2, $3) RETURNING *", 
+      [interviewId, JSON.stringify(chatLog), null]
     );
 
     const evaluation = await evaluateInterview(chatLog);
@@ -148,9 +136,15 @@ const endInterview = async (req, res) => {
 
     const { score, feedback } = evaluation;
 
+    // Insert the extracted score directly from feedback
     await db.query(
       "UPDATE Interviews SET score = $1 WHERE id = $2",
       [score, interviewId]
+    );
+
+    await db.query(
+      "UPDATE QAOfInterview SET feedback = $1 WHERE interview_id = $2",
+      [feedback, interviewId]
     );
 
     return res.status(201).json({
@@ -164,5 +158,6 @@ const endInterview = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error." });
   }
 };
+
 
 export { startInterview, endInterview, textToSpeechDeepgram };
