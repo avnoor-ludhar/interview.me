@@ -12,7 +12,7 @@ const Video = ({ videoRef, stopVideo, startVideo, isRecording }: videoProps) => 
 
     return (
         <div className="flex items-end justify-center h-full">
-            <div className="relative w-[280px] h-[180px] rounded-2xl">
+            <div className="relative w-[300px] h-[180px] rounded-2xl">
                 <video
                     className="rounded-2xl w-full h-full object-cover overflow-hidden max-h-[87vh]"
                     ref={videoRef}

@@ -1,13 +1,18 @@
 import { speaker } from "@/utils/types";
 
-const Message = ({ person }: {person: speaker}) =>{
+const Message = ({ person, interviewerName }: {person: speaker, interviewerName: string | undefined}) =>{
     return(
-        <div className={`relative w-[min(80%,_300px)] h-fit ${person.speaker == "Gemini" ? 'bg-[#7879F1] self-start': 'bg-white self-end'} p-2 rounded-2xl m-4 z-10`}>
-            <div className={`absolute bottom-0 ${person.speaker == "Gemini" ? 'left-[-10px] triangle-purple': 'right-[-10px] triangle-white'}`}></div>
-            <p className="relative text-black text-sm text-left z-10">
-               {person.text}
-            </p>
-        </div>
+        <>
+            <div className={`relative w-full h-fit z-20 mb-4`}>
+                <p className={`font-bold text-md mb-2 w-fit ${person.speaker == "Gemini" ?"bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 text-transparent bg-clip-text" : "text-white" }`}>
+                    {person.speaker == "Gemini" ? interviewerName : "You"}
+                </p>
+                <p className="relative text-sm text-left w-full">
+                {person.text}
+                </p>
+            </div>
+        </>
+        
     )
 }
 

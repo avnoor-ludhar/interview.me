@@ -13,6 +13,7 @@ import { clearQueue } from "@/redux/features/audioQueueSlice";
 import { clearChatLog, resetSpeaker } from "@/redux/features/chatLogSlice";
 import { handleWebSocketThunk } from "@/redux/features/chatLogThunk";
 import { convertTextToSpeech } from "@/utils/convertTextToSpeech";
+import AiCircle from "@/components/AiCircle";
 /*
 Custom hooks allow us to store stateful logic in them. This means each
 hook has a independant section compared to every other
@@ -145,10 +146,11 @@ export default function Meeting(): JSX.Element{
             <div className="w-full h-4 flex flex-row justify-between items-center p-8">
                 <p className="font-bold text-lg">InterviewME</p>
             </div>
-            <div className="w-full h-[calc(100vh-100px)] flex flex-row items-center justify-between px-10 py-6">
+            <div className="w-full h-[calc(100vh-100px)] flex flex-row items-center justify-between px-10 py-6 pr-24">
                 <Video videoRef={videoRef} stopVideo={stopVideo} startVideo={startVideo} isRecording={isRecording}/>
-                <MeetingOptions isConnected={isConnected} handleRecord={handleRecord} stopVideo={stopVideo} startVideo={startVideo} isVideoOn={isVideoOn} isRecording={isRecording} toggleMute={toggleMute} currentSpeaker={currentSpeaker} />
-                {/* <Chat interviewer={state?.interviewer}/> */}
+                <AiCircle interviewer={state?.interviewer} currentSpeaker={currentSpeaker}/>
+                {/* <MeetingOptions isConnected={isConnected} handleRecord={handleRecord} stopVideo={stopVideo} startVideo={startVideo} isVideoOn={isVideoOn} isRecording={isRecording} toggleMute={toggleMute} currentSpeaker={currentSpeaker} /> */}
+                <Chat interviewer={state?.interviewer} isConnected={isConnected} handleRecord={handleRecord}/>
             </div>
         </div>
         )

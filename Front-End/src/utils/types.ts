@@ -72,4 +72,14 @@ type videoProps = {
     isRecording: boolean
 };
 
-export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps};
+type AiCircleProps = {
+    interviewer: InterviewerType | undefined,
+    currentSpeaker: speaker
+}
+
+type ChatLogProps = {interviewer: InterviewerType | undefined, 
+    isConnected: boolean, 
+    handleRecord: () => void
+}
+
+export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps, AiCircleProps, ChatLogProps};
