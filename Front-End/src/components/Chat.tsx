@@ -25,7 +25,7 @@ const Chat = ({interviewer, isConnected, handleRecord}:ChatLogProps) =>{
     return (
         <div className="w-1/4 h-full flex flex-col justify-center">
             <div 
-                className="relative w-full h-2/3 flex flex-col  overflow-y-scroll mb-4"
+                className="relative w-full h-2/3 flex flex-col  overflow-y-scroll mb-4 hide-scrollbar"
                 ref={chatContainerRef}
                 onScroll={handleScroll}
             >

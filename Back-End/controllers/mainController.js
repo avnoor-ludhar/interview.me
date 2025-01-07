@@ -32,7 +32,7 @@ const startInterview = async (req, res) => {
   try {
     const { rows } = await db.query(
       "INSERT INTO interviews (user_id, typeofinterview, institution) VALUES ($1, $2, $3) RETURNING *", 
-      [user.id, 'SWE', 'CIBC']
+      [user.id, typeofinterview, institution]
     );
     return res.status(201).json({ interviewId: rows[0].id });
   } catch (error) {

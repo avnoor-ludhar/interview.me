@@ -46,7 +46,7 @@ function App(): JSX.Element {
     return <div>Loading...</div>; // or any other loading indicator
   }
 
-  const hideNavbarRoutes = ['/home', '/meeting', '/intake'];
+  const hideNavbarRoutes = ['/home', '/meeting', '/intake', '/results'];
   const shouldShowNavbar = !hideNavbarRoutes.includes(location.pathname);
 
   return (

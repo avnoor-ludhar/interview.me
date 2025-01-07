@@ -82,4 +82,24 @@ type ChatLogProps = {interviewer: InterviewerType | undefined,
     handleRecord: () => void
 }
 
-export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps, AiCircleProps, ChatLogProps};
+type interviewContent = {
+    id: number,
+    interview_id: number,
+    chat: string,
+    feedback: string | null
+}
+
+type dataForResults = {
+    id: number,
+    interview_id: number,
+    chat: speaker[],
+    feedback: string | null
+}
+
+type ViewChatLogProps = {
+    interviewer: InterviewerType | undefined, 
+    chatLog: speaker[] | undefined
+}
+
+
+export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps, AiCircleProps, ChatLogProps, interviewContent, dataForResults, ViewChatLogProps};
