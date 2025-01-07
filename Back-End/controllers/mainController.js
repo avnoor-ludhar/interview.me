@@ -125,9 +125,10 @@ const endInterview = async (req, res) => {
   }
 
   try {
+    const date = new Date();
     const { rows } = await db.query(
-      "INSERT INTO QAOfInterview (interview_id, chat, feedback) VALUES ($1, $2, $3) RETURNING *", 
-      [interviewId, JSON.stringify(chatLog), null]
+      "INSERT INTO QAOfInterview (interview_id, chat, feedback, interview_date) VALUES ($1, $2, $3) RETURNING *", 
+      [interviewId, JSON.stringify(chatLog), null, new Date()]
     );
 
     const evaluation = await evaluateInterview(chatLog);
@@ -140,12 +141,12 @@ const endInterview = async (req, res) => {
 
     // Insert the extracted score directly from feedback
     await db.query(
-      "UPDATE Interviews SET score = $1 WHERE id = $2",
+      "UPDATE interviews SET score = $1 WHERE id = $2",
       [score, interviewId]
     );
 
     await db.query(
-      "UPDATE QAOfInterview SET feedback = $1 WHERE interview_id = $2",
+      "UPDATE qaofinterview SET feedback = $1 WHERE interview_id = $2",
       [feedback, interviewId]
     );
 

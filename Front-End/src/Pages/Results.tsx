@@ -78,7 +78,7 @@ const Results = () => {
                     <h1 className="text-3xl font-bold mb-4">Interview Results</h1>
                     <p className="text-lg mb-6">Position: <span className="font-semibold">{state?.position}</span></p>
                     {loading ? (    
-                        <p className="text-center text-gray-300 animate-pulse">Loading data... Please wait.</p>
+                        <p className="text-center text-gray-300 animate-pulse">Loading data... May take a few minutes.</p>
                     ) : error ? (
                         <p className="text-center text-red-400">{error}</p>
                     ) : (
