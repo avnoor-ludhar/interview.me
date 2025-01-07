@@ -30,3 +30,6 @@ CREATE TABLE refresh_tokens (
 
 ALTER TABLE QAOfInterview
 ADD COLUMN feedback TEXT;
+
+ALTER TABLE interviews
+ADD COLUMN interview_date DATE;
