@@ -13,7 +13,7 @@ router.use(requireAuth);
 router.post('/tts', textToSpeechDeepgram);
 
 // Start Interview Route
-router.get('/startInterview', startInterview);
+router.post('/startInterview', startInterview);
 
 // End Interview Route
 router.post('/endInterview', endInterview);

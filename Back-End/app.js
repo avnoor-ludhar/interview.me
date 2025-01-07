@@ -185,11 +185,13 @@ wss.on('connection', (ws, req) => {
                 } else if (parsedMessage.type == 'start_deepgram_session') {
                     //starts connection
                     try{
-                        const { data } = await axios.get("http://localhost:8080/api/interview/startInterview", {
+                        const { data } = await axios.post("http://localhost:8080/api/interview/startInterview", 
+                            {company: parsedMessage.companyName, typeofinterview: parsedMessage.jobType},
+                            {
                             headers: {
                                 Authorization: `Bearer ${accessToken}` // Attach the JWT here
                             }
-                        });
+                            });
                         ws.interviewId = data.interviewId;
                         ws.send(JSON.stringify({ type: 'interviewId', interviewId: ws.interviewId }));
                         

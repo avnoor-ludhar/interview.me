@@ -26,6 +26,8 @@ const deepgram = createClient(process.env.DEEPGRAM_APIKEY);
 // Start Interview Function
 const startInterview = async (req, res) => {
   const user = req.user;
+  const typeofinterview = req.body?.typeofinterview;
+  const institution = req.body?.company;
 
   try {
     const { rows } = await db.query(

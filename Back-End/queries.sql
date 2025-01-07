@@ -28,5 +28,5 @@ CREATE TABLE refresh_tokens (
     last_used TIMESTAMP
 );
 
-ALTER TABLE interview
+ALTER TABLE QAOfInterview
 ADD COLUMN feedback TEXT;
