@@ -31,8 +31,8 @@ const startInterview = async (req, res) => {
 
   try {
     const { rows } = await db.query(
-      "INSERT INTO interviews (user_id, typeofinterview, institution) VALUES ($1, $2, $3) RETURNING *", 
-      [user.id, typeofinterview, institution]
+      "INSERT INTO interviews (user_id, typeofinterview, institution, interview_date) VALUES ($1, $2, $3, $4) RETURNING *", 
+      [user.id, typeofinterview, institution, new Date()]
     );
     return res.status(201).json({ interviewId: rows[0].id });
   } catch (error) {
@@ -127,8 +127,8 @@ const endInterview = async (req, res) => {
   try {
     const date = new Date();
     const { rows } = await db.query(
-      "INSERT INTO QAOfInterview (interview_id, chat, feedback, interview_date) VALUES ($1, $2, $3) RETURNING *", 
-      [interviewId, JSON.stringify(chatLog), null, new Date()]
+      "INSERT INTO QAOfInterview (interview_id, chat, feedback) VALUES ($1, $2, $3) RETURNING *", 
+      [interviewId, JSON.stringify(chatLog), null]
     );
 
     const evaluation = await evaluateInterview(chatLog);
@@ -146,7 +146,7 @@ const endInterview = async (req, res) => {
     );
 
     await db.query(
-      "UPDATE qaofinterview SET feedback = $1 WHERE interview_id = $2",
+      "UPDATE QAOfInterview SET feedback = $1 WHERE interview_id = $2",
       [feedback, interviewId]
     );
 

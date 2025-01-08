@@ -10,8 +10,6 @@ const Chat = ({interviewer, isConnected, handleRecord}:ChatLogProps) =>{
     const [scrollTop, setScrollTop] = useState(0);
     const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
-    console.log(scrollTop);
-
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }, [chatLog]);

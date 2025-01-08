@@ -1,14 +1,8 @@
-import { useEffect, useRef } from "react";
 import { ViewChatLogProps } from "@/utils/types";
 import Message from "./Message";
 
 const ChatToView = ({interviewer, chatLog}: ViewChatLogProps) =>{
     const interviewerName = interviewer?.name.split("(")[0];
-    const chatEndRef = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, [chatLog]);
 
 
     return (
@@ -20,7 +14,7 @@ const ChatToView = ({interviewer, chatLog}: ViewChatLogProps) =>{
 
                 {chatLog?.map((person, i) => <Message person={person} interviewerName={interviewerName} key={i} />)}
                 
-                <div ref={chatEndRef} />
+                <div />
             </div>
         </div>
     )
