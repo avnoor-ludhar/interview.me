@@ -27,7 +27,6 @@ const useAudioQueue = (setKillSocket: React.Dispatch<React.SetStateAction<boolea
         // Re-run every time `currentSpeaker` changes
         if (audioQueue.length === 0 && currentAudio === null && currentSpeaker.speaker == "Gemini") {
             const textToCheckEnd = currentSpeaker.text.toLowerCase().replace(/ /g, "");
-            console.log(textToCheckEnd);
             if (textToCheckEnd.includes("haveagreatday") || textToCheckEnd.includes("haveagoodday") || textToCheckEnd.includes("haveawonderfulday")) {
                 setKillSocket(true);
             }
