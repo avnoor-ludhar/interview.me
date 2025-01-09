@@ -1,7 +1,6 @@
 import { useAppSelector } from "@/redux/store";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { TrendingUp } from "lucide-react";
 import { Graph } from "../components/Graph";
 import { Area } from "../components/Area";
 
