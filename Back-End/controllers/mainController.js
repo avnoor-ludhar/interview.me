@@ -162,5 +162,27 @@ const endInterview = async (req, res) => {
   }
 };
 
+const getFeedback = async (req, res) => {
+  const interviewId = req.params.id;
 
-export { startInterview, endInterview, textToSpeechDeepgram };
+  try {
+      // Query feedback from the database
+      const { rows } = await db.query(
+          "SELECT * FROM QAOfInterview WHERE interview_id = $1",
+          [interviewId]
+      );
+
+      if (rows.length === 0) {
+          return res.status(404).json({ error: "No data found for this interview." });
+      }
+
+      // Return the feedback and chat data
+      return res.status(200).json(rows[0]);
+  } catch (error) {
+      console.error("Database error:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+
+export { startInterview, endInterview, textToSpeechDeepgram, getFeedback};
