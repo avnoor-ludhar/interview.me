@@ -8,7 +8,7 @@ const ChatToView = ({interviewer, chatLog}: ViewChatLogProps) =>{
     return (
         <div className="w-1/2 min-w-[350px] max-w-[500px] h-full flex flex-col justify-center">
             <div 
-                className="relative w-full h-fit max-h-[400px] flex flex-col  overflow-y-scroll mb-4 hide-scrollbar"
+                className="relative w-full h-fit max-h-[400px] flex flex-col overflow-y-scroll mb-4 hide-scrollbar"
             >
                 <div className="mt-auto" />
 

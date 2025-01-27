@@ -1,7 +1,7 @@
 import express from 'express';
 import requireAuth from '../middleware/requireAuth.js';
 import db from '../dbConnection.js';
-import { startInterview, textToSpeechDeepgram, endInterview, getFeedback } from '../controllers/mainController.js';
+import { startInterview, textToSpeechDeepgram, endInterview, getFeedback, getRecentInterview } from '../controllers/mainController.js';
 
 // Create router instance
 const router = express.Router();
@@ -20,5 +20,7 @@ router.post('/endInterview', endInterview);
 
 // Fetch Interview Feedback Route
 router.get('/feedback/:id', getFeedback);
+
+router.get('/getRecentInterview', getRecentInterview)
 
 export default router;

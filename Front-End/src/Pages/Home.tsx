@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp } from "lucide-react";
 import { Graph } from "../components/Graph";
 import { Area } from "../components/Area";
-import Chat from "@/components/Chat";
+import ChatToView from "@/components/ChatToView";
+import { useEffect } from "react";
+import api from "@/lib/axios";
+import { LogoutHook, useLogout } from "@/hooks/useLogout";
 
 
 
@@ -12,10 +15,25 @@ import Chat from "@/components/Chat";
 const Home = () => {
     const user = useAppSelector((state) => state.user.user);
     const navigate = useNavigate();
+    const {logout}: LogoutHook = useLogout();
 
     if (!user) {
         navigate('/login');
     }
+
+    const fetchInterviewData = async () =>{
+        try{
+            const response = await api.get("/api/interview/getRecentInterview");
+            console.log(response);
+        }catch(err){
+            console.log(err);
+        }
+        
+    }
+
+    useEffect(() => {
+        fetchInterviewData()
+    }, []);
 
     return (
         <div className="flex justify-between items-start font-poppins">
@@ -27,7 +45,7 @@ const Home = () => {
                         <Button className="shadow-2xl shadow-indigo-500/50" variant="outline" onClick={() => navigate("/intake")}>
                             Begin Interview
                         </Button>
-                        <Button className="shadow-2xl shadow-indigo-500/50 mr-12" variant="outline" onClick={() => navigate("/intake")}>
+                        <Button className="shadow-2xl shadow-indigo-500/50 mr-12" variant="outline" onClick={() => logout()}>
                             Log out
                         </Button>
                     </div>

@@ -184,5 +184,16 @@ const getFeedback = async (req, res) => {
   }
 }
 
+const getRecentInterview = async (req, res) => {
+    try{
+      const {rows} = await db.query('SELECT * FROM interviews WHERE interview_date IS NOT NULL ORDER BY interview_date DESC LIMIT 1');
+      console.log(rows);
+      res.status(200).json({hello: "HI"});
+    }catch(err){
+      console.log("Database error: ", err);
+      res.status(500).json({error: "EWIE"})
+    }
+};
 
-export { startInterview, endInterview, textToSpeechDeepgram, getFeedback};
+
+export { startInterview, endInterview, textToSpeechDeepgram, getFeedback, getRecentInterview};

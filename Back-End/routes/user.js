@@ -11,7 +11,7 @@ router.post("/register", registerUser);
 
 router.post("/logout", logoutUser);
 
-router.get("/session", sessionCheck)
+router.get("/session", sessionCheck);
 
 router.get("/refresh-token", refreshToken);
 

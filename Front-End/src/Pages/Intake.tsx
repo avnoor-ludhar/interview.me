@@ -185,12 +185,12 @@ function Intake(): JSX.Element {
                         id="job-description"
                         value={jobDescription}
                         onChange={(e) => setJobDescription(e.target.value)}
-                        maxLength={300}
-                        placeholder="Briefly describe the job (max 300 characters)."
+                        maxLength={600}
+                        placeholder="Briefly describe the job (max 600 characters)."
                         className="resize-none"
                       />
                       <p className="text-right text-sm text-gray-500">
-                        {jobDescription.length}/300
+                        {jobDescription.length}/600
                       </p>
                     </div>
                     {/* Interviewer Selection */}
