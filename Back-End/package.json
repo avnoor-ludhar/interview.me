@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js"
+    "dev": "node --import ./sentry.js app.js",
+    "start": "node --import ./sentry.js app.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,8 @@
     "@deepgram/sdk": "^3.6.0",
     "@google-cloud/vertexai": "^1.9.2",
     "@google/generative-ai": "^0.12.0",
+    "@sentry/node": "^10.19.0",
+    "@sentry/tracing": "^7.120.4",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",

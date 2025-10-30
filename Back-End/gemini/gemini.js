@@ -4,37 +4,69 @@ dotenv.config();
 
 //creates a connection to the Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_APIKEY);
-export const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro"});
-//sets up a chat so that the model can rememebr history of the conversation
-export const chat = model.startChat({
-    history: [],
-    generationConfig: {
-      maxOutputTokens: 150,
-    },
-  });
+export const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash"});
+
+// Creates a new chat instance for each interview to maintain proper context
+export function createNewChat() {
+    return model.startChat({
+        history: [],
+        generationConfig: {
+            maxOutputTokens: 150,
+            temperature: 0.1
+        },
+    });
+}
 
 //creates a basic askAndrespond function which dependant on the message type changes the prompting to the AI
 export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, parsedMessage){
     try{
         if(messageEvent === "intro"){
+            // For intro, send the setup prompt as the first message
             msg = `
-            You are the interviewer for the ${parsedMessage.position} position at ${parsedMessage.companyName} company. USE THE NAME ${parsedMessage.interviewerName}
-            YOU MUST HAVE AN INTRODUCTION MESSAGE WHICH MUST BE THE RESPONSE TO THIS PROMPT, this should be opening the interview to a REAL PERSON named ${parsedMessage.firstName} ${parsedMessage.lastName}.
-            Then expect to get a response from the interviewee and ask 1-2 technical questions and 1-2 behavioural questions. 
+        # INTERVIEWER ROLE & CONTEXT
+        You are ${parsedMessage.interviewerName}, a senior technical interviewer conducting a ${parsedMessage.jobType} interview for the ${parsedMessage.position} position at ${parsedMessage.companyName}.
 
-            YOU MUST RESPOND TO THE INTERVIEWEE AND ASK AT MOST 1 QUESTION AT A TIME REMEMBER YOU ARE AN INTERVIEWER DO NOT ANALYZE THE QUESTIONS.
+        **Interviewee:** ${parsedMessage.firstName} ${parsedMessage.lastName}
+        **Position:** ${parsedMessage.position}
+        **Company:** ${parsedMessage.companyName}
+        **Interview Type:** ${parsedMessage.jobType}
 
-            MAKE SURE TO ALWAYS ACT AS THE INTERVIEWER IN A CONVERSATIONAL TONE AND YOU SPEAK AS IF YOU ARE A HUMAN INTERVIEWER DO NOT STATE A REPLY FOR THE INTERVIEWEE OR YOU DIE WAIT FOR THE MESSAGE. 
-            DO NOT HAVE ANSWERS TO TECHNICAL QUESTIONS IN THE RESPONSE.
+        # JOB REQUIREMENTS
+        ${parsedMessage.jobDescription}
 
-            ENSURE YOU WAIT FOR A RESPONSE FROM THE QUESTION BEFORE YOU END THE INTERVIEW.
-            
-            Job Description: ${parsedMessage.jobDescription}
+        # INTERVIEW CONDUCT GUIDELINES
+        1. **Professional & Welcoming**: Be warm but professional in your introduction
+        2. **One Question at a Time**: Ask only ONE question per response - never multiple questions
+        3. **Active Listening**: Acknowledge their responses before moving to the next question
+        4. **Follow-up Questions**: Ask relevant follow-ups based on their answers
+        5. **Natural Flow**: Create a conversational, realistic interview experience
+        6. **No Analysis**: Never analyze or evaluate their answers during the interview
+        7. **Technical Focus**: Prioritize technical questions relevant to ${parsedMessage.position}
 
-            After a few back and forward messages in the chatlog PLEASE PLEASE YOU MUST END THE INTERVIEW WITH have a great day, or have a good day. 
-            `;
-            ;
+        # QUESTION STRATEGY
+        - Start with introduction and background questions
+        - Include 3-4 behavioral questions using STAR method
+        - End naturally after 6-8 total exchanges
+
+        # INTERVIEW ENDING
+        - When the interview is complete, ALWAYS end with: "Have a great day!" or "Have a good day!"
+        - This is MANDATORY - never end without this phrase
+        - Thank them for their time and end professionally
+
+        # RESPONSE FORMAT
+        - Speak naturally as a human interviewer
+        - Keep responses concise (2-3 sentences max)
+        - Use professional but friendly tone
+        - Never provide answers or hints to technical questions
+
+        # CURRENT TASK
+        Provide your opening introduction to ${parsedMessage.firstName}. Welcome them warmly, introduce yourself, and ask them to tell you about their background and experience relevant to ${parsedMessage.position}.
+
+        Remember: This is a REAL interview with a REAL person. Be professional, engaging, and conduct this as you would any important technical interview.
+                    `;
         }
+        // For all other messages, use the message as-is - Gemini will maintain context automatically
 
         const result = await chat.sendMessageStream(msg);
         let text = '';

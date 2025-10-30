@@ -1,13 +1,12 @@
 import { useAppSelector } from "@/redux/store";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { TrendingUp } from "lucide-react";
 import { Graph } from "../components/Graph";
 import { Area } from "../components/Area";
-import ChatToView from "@/components/ChatToView";
 import { useEffect } from "react";
 import api from "@/lib/axios";
 import { LogoutHook, useLogout } from "@/hooks/useLogout";
+import * as Sentry from '@sentry/react';
 
 
 
@@ -22,13 +21,33 @@ const Home = () => {
     }
 
     const fetchInterviewData = async () =>{
-        try{
-            const response = await api.get("/api/interview/getRecentInterview");
-            console.log(response);
-        }catch(err){
-            console.log(err);
-        }
-        
+        // Create a custom span for the interview data fetch
+        await Sentry.startSpan({
+            name: 'interview.fetchRecent',
+            op: 'db.query',
+            attributes: {
+                'component': 'frontend-interview',
+                'endpoint': '/api/interview/getRecentInterview'
+            }
+        }, async () => {
+            try{
+                const response = await api.get("/api/interview/getRecentInterview");
+                console.log(response);
+            }catch(err){
+                console.log(err);
+                // Capture the error in Sentry with additional context
+                Sentry.captureException(err, {
+                    tags: {
+                        component: 'Home',
+                        action: 'fetchInterviewData'
+                    },
+                    extra: {
+                        userId: user?.email,
+                        endpoint: '/api/interview/getRecentInterview'
+                    }
+                });
+            }
+        });
     }
 
     useEffect(() => {
@@ -95,6 +114,7 @@ const Home = () => {
                         {/* <Chat /> */}
                     </div>
                 </div>
+
                 
                 
             </div>

@@ -6,6 +6,7 @@ import api from "@/lib/axios";
 import ReactMarkdown from 'react-markdown';
 import ChatToView from "@/components/ChatToView";
 import { Button } from "@/components/ui/button";
+import * as Sentry from '@sentry/react';
 
 const Results = () => {
     const location = useLocation();
@@ -32,8 +33,18 @@ const Results = () => {
 
         // Function to fetch data with retry logic
         const fetchInterviewData = async () => {
-            try {
-                const response = await api.get(`/api/interview/feedback/${interviewId}`);
+            // Create a custom span for the interview feedback fetch
+            await Sentry.startSpan({
+                name: 'interview.fetchFeedback',
+                op: 'db.query',
+                attributes: {
+                    'component': 'frontend-results',
+                    'interview.id': interviewId,
+                    'endpoint': `/api/interview/feedback/${interviewId}`
+                }
+            }, async () => {
+                try {
+                    const response = await api.get(`/api/interview/feedback/${interviewId}`);
                 const result: interviewContent | undefined = response.data;
                 if (result) {
                     setError(null)
@@ -49,10 +60,11 @@ const Results = () => {
                     setError("Data is null");
                     throw new Error("Data is null"); // Trigger retry if data is null
                 }
-            } catch (err: any) {
-                setError(err?.message);
-                console.error("Error fetching interview data:", err);
-            }
+                } catch (err: any) {
+                    setError(err?.message);
+                    console.error("Error fetching interview data:", err);
+                }
+            });
         };
 
         const interval = setInterval(fetchInterviewData, 3000); // Retry every 5 seconds

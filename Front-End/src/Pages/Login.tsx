@@ -13,6 +13,7 @@ import { Label } from "@radix-ui/react-label";
 import { useState } from "react";
 import axios, {AxiosError, AxiosResponse} from "axios";
 import { NavigateFunction, useNavigate } from "react-router-dom";
+import * as Sentry from '@sentry/react';
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { addUser } from "@/redux/features/userSlice";
 import api from "@/lib/axios";
@@ -43,25 +44,65 @@ function Login(): JSX.Element {
     }
 
     const handleClick = async () =>{
-        try{
-            const formInput:formData = {email: email, password: password};
-            console.log("Boom");
-            const response: AxiosResponse = await api.post('/api/user/login', formInput);
-            const dataFromAPI: responseData = response.data;
-            
-            dispatch(addUser({email: dataFromAPI.email, token: ''}));// no need to store the token in redux
-            setEmail('');
-            setPassword('');
-            setError(null);
-            navigate('/home');
-        } catch(err: unknown){
-            if(axios.isAxiosError(err)){
-                const newError = err as AxiosError<ErrorResponse>;
-                setError(newError.response?.data?.error ?? 'Unknown error');
-            }else{
-                console.log("idk");
+        // Create a custom span for the login operation
+        await Sentry.startSpan({
+            name: 'user.login',
+            op: 'auth.login',
+            attributes: {
+                'user.email': email,
+                'component': 'frontend-login'
             }
-        }
+        }, async () => {
+            try {
+                const formInput: formData = {email: email, password: password};
+                console.log("Boom");
+                const response: AxiosResponse = await api.post('/api/user/login', formInput);
+                const dataFromAPI: responseData = response.data;
+                
+                dispatch(addUser({email: dataFromAPI.email, token: ''})); // no need to store the token in redux
+                
+                // Set user context in Sentry for better error tracking
+                Sentry.setUser({
+                    email: dataFromAPI.email,
+                    id: dataFromAPI.email, // Using email as ID since we don't have a separate user ID
+                });
+                
+                setEmail('');
+                setPassword('');
+                setError(null);
+                navigate('/home');
+            } catch(err: unknown) {
+                if(axios.isAxiosError(err)){
+                    const newError = err as AxiosError<ErrorResponse>;
+                    setError(newError.response?.data?.error ?? 'Unknown error');
+                    
+                    // Capture login errors in Sentry
+                    Sentry.captureException(err, {
+                        tags: {
+                            component: 'Login',
+                            action: 'login-failed'
+                        },
+                        extra: {
+                            email: email,
+                            status: newError.response?.status,
+                            errorMessage: newError.response?.data?.error
+                        }
+                    });
+                } else {
+                    console.log("idk");
+                    // Capture non-Axios errors
+                    Sentry.captureException(err, {
+                        tags: {
+                            component: 'Login',
+                            action: 'login-failed-unknown'
+                        },
+                        extra: {
+                            email: email
+                        }
+                    });
+                }
+            }
+        });
     }
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) =>{

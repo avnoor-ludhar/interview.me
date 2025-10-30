@@ -16,6 +16,7 @@ import { NavigateFunction, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import {addUser} from '@/redux/features/userSlice';
 import api from "@/lib/axios";
+import * as Sentry from '@sentry/react';
   
 type formData = {
     email: string,
@@ -45,25 +46,35 @@ function SignUp(): JSX.Element {
     }
 
     const handleClick = async () =>{
-        try{
-            const formInput:formData = {email: email, password: password, passwordConfirm: passwordConfirm};
-
-            const response: AxiosResponse = await api.post('/api/user/register', formInput);
-            const dataFromAPI: responseData = response.data;
-            
-            dispatch(addUser({email: dataFromAPI.email, token: ''}));// no need to store the token in redux
-            setEmail('');
-            setPassword('');
-            setError(null);
-            navigate('/home');
-        } catch(err: unknown){
-            if(axios.isAxiosError(err)){
-                const newError = err as AxiosError<ErrorResponse>;
-                setError(newError.response?.data?.error ?? 'Unknown error');
-            }else{
-                console.log("idk");
+        // Create a custom span for the registration operation
+        await Sentry.startSpan({
+            name: 'user.register',
+            op: 'auth.register',
+            attributes: {
+                'user.email': email,
+                'component': 'frontend-signup'
             }
-        }
+        }, async () => {
+            try{
+                const formInput:formData = {email: email, password: password, passwordConfirm: passwordConfirm};
+
+                const response: AxiosResponse = await api.post('/api/user/register', formInput);
+                const dataFromAPI: responseData = response.data;
+                
+                dispatch(addUser({email: dataFromAPI.email, token: ''}));// no need to store the token in redux
+                setEmail('');
+                setPassword('');
+                setError(null);
+                navigate('/home');
+            } catch(err: unknown){
+                if(axios.isAxiosError(err)){
+                    const newError = err as AxiosError<ErrorResponse>;
+                    setError(newError.response?.data?.error ?? 'Unknown error');
+                }else{
+                    console.log("idk");
+                }
+            }
+        });
     }
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) =>{

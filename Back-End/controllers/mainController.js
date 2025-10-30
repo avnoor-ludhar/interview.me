@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import db from "../dbConnection.js";
 import { VertexAI } from '@google-cloud/vertexai';
 import { createClient } from "@deepgram/sdk";
+import * as Sentry from '@sentry/node';
 dotenv.config();
 
 // Initialize Vertex AI and Model
@@ -25,141 +26,254 @@ const deepgram = createClient(process.env.DEEPGRAM_APIKEY);
 
 // Start Interview Function
 const startInterview = async (req, res) => {
-  const user = req.user;
-  const typeofinterview = req.body?.typeofinterview;
-  const institution = req.body?.company;
+  // Create a span for the start interview operation
+  const startInterviewSpan = Sentry.startSpan({
+    op: 'interview.start',
+    name: 'Start Interview',
+    tags: {
+      user_id: req.user?.id,
+      interview_type: req.body?.typeofinterview,
+      company: req.body?.company
+    }
+  }, async () => {
+    const user = req.user;
+    const typeofinterview = req.body?.typeofinterview;
+    const institution = req.body?.company;
 
-  try {
-    const { rows } = await db.query(
-      "INSERT INTO interviews (user_id, typeofinterview, institution, interview_date) VALUES ($1, $2, $3, $4) RETURNING *", 
-      [user.id, typeofinterview, institution, new Date()]
-    );
-    return res.status(201).json({ interviewId: rows[0].id });
-  } catch (error) {
-    console.error(error);
-    return res.status(403).json({ error: "Could not insert into database." });
-  }
+    try {
+      // Create span for database insert
+      const dbSpan = Sentry.startSpan({
+        op: 'db.query',
+        name: 'Create Interview Record'
+      }, async () => {
+        return await db.query(
+          "INSERT INTO interviews (user_id, typeofinterview, institution, interview_date) VALUES ($1, $2, $3, $4) RETURNING *", 
+          [user.id, typeofinterview, institution, new Date()]
+        );
+      });
+
+      const { rows } = await dbSpan;
+      return res.status(201).json({ interviewId: rows[0].id });
+    } catch (error) {
+      console.error(error);
+      return res.status(403).json({ error: "Could not insert into database." });
+    }
+  });
+
+  return await startInterviewSpan;
 };
 
 // Text-to-Speech Deepgram Function
 const textToSpeechDeepgram = async (req, res) => {
-  const { text, chunkNumber, model } = req.body;
+  // Create a span for the TTS operation
+  const ttsSpan = Sentry.startSpan({
+    op: 'ai.text_to_speech',
+    name: 'Deepgram Text-to-Speech',
+    tags: {
+      model: req.body?.model,
+      text_length: req.body?.text?.length
+    }
+  }, async () => {
+    const { text, chunkNumber, model } = req.body;
 
-  if (!text || typeof text !== 'string' || text.trim() === '') {
-    return res.status(400).send("Invalid text input");
-  }
-
-  try {
-    const response = await deepgram.speak.request({ text }, { model });
-    const stream = await response.getStream();
-
-    let audioData = [];
-    for await (const chunk of stream) {
-      audioData.push(chunk);
+    if (!text || typeof text !== 'string' || text.trim() === '') {
+      return res.status(400).send("Invalid text input");
     }
 
-    const completeAudioBuffer = Buffer.concat(audioData);
-    const audioBase64 = completeAudioBuffer.toString('base64');
+    try {
+      // Create span for Deepgram API call
+      const deepgramSpan = Sentry.startSpan({
+        op: 'ai.deepgram_speak',
+        name: 'Deepgram Speak API Call'
+      }, async () => {
+        return await deepgram.speak.request({ text }, { model });
+      });
 
-    res.setHeader('Content-Type', 'application/json');
-    return res.json({
-      audio: audioBase64,
-      chunkNumber: chunkNumber,
-    });
-  } catch (e) {
-    console.error(e);
-    if (e.status == 400) {
-      return res.status(e.status).send("Text data could not be processed");
+      const response = await deepgramSpan;
+      const stream = await response.getStream();
+
+      // Create span for audio processing
+      const audioSpan = Sentry.startSpan({
+        op: 'ai.audio_processing',
+        name: 'Process Audio Stream'
+      }, async () => {
+        let audioData = [];
+        for await (const chunk of stream) {
+          audioData.push(chunk);
+        }
+
+        const completeAudioBuffer = Buffer.concat(audioData);
+        const audioBase64 = completeAudioBuffer.toString('base64');
+        return audioBase64;
+      });
+
+      const audioBase64 = await audioSpan;
+
+      res.setHeader('Content-Type', 'application/json');
+      return res.json({
+        audio: audioBase64,
+        chunkNumber: chunkNumber,
+      });
+    } catch (e) {
+      console.error(e);
+      if (e.status == 400) {
+        return res.status(e.status).send("Text data could not be processed");
+      }
+      return res.status(500).send("Internal Server Error");
     }
-    return res.status(500).send("Internal Server Error");
-  }
+  });
+
+  return await ttsSpan;
 };
 
 // Function to evaluate interview
 const evaluateInterview = async (chatLog) => {
-  try {
-    const feedbackPrompt = `
-      You will be provided with a text transcription based on an interview. The criteria is STAR method. 
-      Provide detailed feedback based on a rubric you will create and deem fit for an interview. 
-      State specifically what the user did incorrectly for each section of the rubric, and provide a mock 
-      answer that is well done. Include suggestions for improvement. Do not send the rubric, just keep it mentally you should not be able to see it. 
-      Please also provide the 1-10 score in a large bold font, it should be the first thing you see, and large. Be more brief, and when you write the score write Grade: X/10. 
-      Don't write the word feedback, just write the feedback
-
-      Here is the interview transcription:
-      ${JSON.stringify(chatLog)}
-    `;
-
-    const feedbackRequest = {
-      contents: [{ role: 'user', parts: [{ text: feedbackPrompt }] }],
-    };
-
-    const feedbackResult = await generativeModel.generateContent(feedbackRequest);
-    const detailedFeedback = feedbackResult.response.candidates[0].content.parts[0].text;
-
-    // Extract score directly from the feedback
-    const scoreMatch = detailedFeedback.match(/Grade:\s*(\d{1,2})/);
-    const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
-
-    if (score === null || isNaN(score)) {
-      console.error("Could not extract score.");
-      return { error: "Failed to extract score." };
+  // Create a span for the AI evaluation
+  const evaluationSpan = Sentry.startSpan({
+    op: 'ai.gemini_evaluation',
+    name: 'Gemini Interview Evaluation',
+    tags: {
+      model: 'gemini-1.5-flash-002',
+      chat_log_length: chatLog?.length
     }
+  }, async () => {
+    try {
+      const feedbackPrompt = `
+        You will be provided with a text transcription based on an interview. The criteria is STAR method. 
+        Provide detailed feedback based on a rubric you will create and deem fit for an interview. 
+        State specifically what the user did incorrectly for each section of the rubric, and provide a mock 
+        answer that is well done. Include suggestions for improvement. Do not send the rubric, just keep it mentally you should not be able to see it. 
+        Please also provide the 1-10 score in a large bold font, it should be the first thing you see, and large. Be more brief, and when you write the score write Grade: X/10. 
+        Don't write the word feedback, just write the feedback
 
-    return {
-      score: score,
-      feedback: detailedFeedback,
-    };
-  } catch (error) {
-    console.error("Error evaluating interview:", error);
-    return { error: "Failed to evaluate interview." };
-  }
+        Here is the interview transcription:
+        ${JSON.stringify(chatLog)}
+      `;
+
+      const feedbackRequest = {
+        contents: [{ role: 'user', parts: [{ text: feedbackPrompt }] }],
+      };
+
+      // Create span for Gemini API call
+      const geminiSpan = Sentry.startSpan({
+        op: 'ai.gemini_generate',
+        name: 'Gemini Generate Content'
+      }, async () => {
+        return await generativeModel.generateContent(feedbackRequest);
+      });
+
+      const feedbackResult = await geminiSpan;
+      const detailedFeedback = feedbackResult.response.candidates[0].content.parts[0].text;
+
+      // Extract score directly from the feedback
+      const scoreMatch = detailedFeedback.match(/Grade:\s*(\d{1,2})/);
+      const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
+
+      if (score === null || isNaN(score)) {
+        console.error("Could not extract score.");
+        return { error: "Failed to extract score." };
+      }
+
+      return {
+        score: score,
+        feedback: detailedFeedback,
+      };
+    } catch (error) {
+      console.error("Error evaluating interview:", error);
+      return { error: "Failed to evaluate interview." };
+    }
+  });
+
+  return await evaluationSpan;
 };
 
 // End Interview Function
 const endInterview = async (req, res) => {
-  const { interviewId, chatLog } = req.body;
+  // Create a span for the end interview operation
+  const endInterviewSpan = Sentry.startSpan({
+    op: 'interview.end',
+    name: 'End Interview',
+    tags: {
+      interview_id: req.body?.interviewId,
+      chat_log_length: req.body?.chatLog?.length
+    }
+  }, async () => {
+    const { interviewId, chatLog } = req.body;
 
-  if (!interviewId || !chatLog) {
-    return res.status(400).json({ error: "Missing interview ID or chat log." });
-  }
-
-  try {
-    const date = new Date();
-    const { rows } = await db.query(
-      "INSERT INTO QAOfInterview (interview_id, chat, feedback) VALUES ($1, $2, $3) RETURNING *", 
-      [interviewId, JSON.stringify(chatLog), null]
-    );
-
-    const evaluation = await evaluateInterview(chatLog);
-
-    if (evaluation.error) {
-      return res.status(500).json({ error: "Failed to evaluate interview." });
+    if (!interviewId || !chatLog) {
+      return res.status(400).json({ error: "Missing interview ID or chat log." });
     }
 
-    const { score, feedback } = evaluation;
+    try {
+      const date = new Date();
+      
+      // Create span for initial database insert
+      const initialDbSpan = Sentry.startSpan({
+        op: 'db.query',
+        name: 'Insert Interview Chat Log'
+      }, async () => {
+        return await db.query(
+          "INSERT INTO QAOfInterview (interview_id, chat, feedback) VALUES ($1, $2, $3) RETURNING *", 
+          [interviewId, JSON.stringify(chatLog), null]
+        );
+      });
 
-    // Insert the extracted score directly from feedback
-    await db.query(
-      "UPDATE interviews SET score = $1 WHERE id = $2",
-      [score, interviewId]
-    );
+      const { rows } = await initialDbSpan;
 
-    await db.query(
-      "UPDATE QAOfInterview SET feedback = $1 WHERE interview_id = $2",
-      [feedback, interviewId]
-    );
+      // Create span for AI evaluation
+      const evaluationSpan = Sentry.startSpan({
+        op: 'ai.evaluation',
+        name: 'AI Interview Evaluation'
+      }, async () => {
+        return await evaluateInterview(chatLog);
+      });
 
-    return res.status(201).json({
-      record: rows[0],
-      score: score,
-      feedback: feedback,
-    });
+      const evaluation = await evaluationSpan;
 
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Internal Server Error." });
-  }
+      if (evaluation.error) {
+        return res.status(500).json({ error: "Failed to evaluate interview." });
+      }
+
+      const { score, feedback } = evaluation;
+
+      // Create span for score update
+      const scoreUpdateSpan = Sentry.startSpan({
+        op: 'db.query',
+        name: 'Update Interview Score'
+      }, async () => {
+        return await db.query(
+          "UPDATE interviews SET score = $1 WHERE id = $2",
+          [score, interviewId]
+        );
+      });
+
+      // Create span for feedback update
+      const feedbackUpdateSpan = Sentry.startSpan({
+        op: 'db.query',
+        name: 'Update Interview Feedback'
+      }, async () => {
+        return await db.query(
+          "UPDATE QAOfInterview SET feedback = $1 WHERE interview_id = $2",
+          [feedback, interviewId]
+        );
+      });
+
+      await scoreUpdateSpan;
+      await feedbackUpdateSpan;
+
+      return res.status(201).json({
+        record: rows[0],
+        score: score,
+        feedback: feedback,
+      });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Internal Server Error." });
+    }
+  });
+
+  return await endInterviewSpan;
 };
 
 const getFeedback = async (req, res) => {
