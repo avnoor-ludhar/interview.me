@@ -69,7 +69,7 @@ export const setupDeepgram = (ws, askAndrespond, chat) => {
         deepgram.addListener(LiveTranscriptionEvents.UtteranceEnd, async (data) => {
             console.log(data);
             //sends the current global message to gemini which then returns the response to the frontend
-            askAndrespond(chat, ws.globalMessage, ws, "message", ws.chunkCount, ws.interupted);
+            askAndrespond(chat, ws.globalMessage, ws, "message");
             ws.globalMessage = "";
         });
 

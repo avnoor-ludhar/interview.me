@@ -7,7 +7,7 @@ import cors from 'cors';
 import db from './dbConnection.js';
 import cookieParser from 'cookie-parser';
 import { WebSocketServer } from 'ws';
-import { createNewChat, askAndrespond } from './gemini/gemini.js';
+import { createNewChat, seedChat, askAndrespond } from './gemini/gemini.js';
 import { setupDeepgram, clearDeepgram } from './deepgram/deepgram.js';
 import jwt from 'jsonwebtoken';
 import axios from "axios";
@@ -146,16 +146,16 @@ wss.on('connection', (ws, req) => {
     console.log('websocket connected on port 8081...');
     //access token to hit up the api layer
     const { accessToken } = req.user;
-           //variables connected with this specific web socket connection
-           ws.globalMessage = "";
-           ws.chunkCount = 0;
-           ws.keepAlive;
-           ws.interupted;
-           ws.interviewId;
-           //create a new chat instance for this specific interview session
-           ws.chat = createNewChat();
-           //variable that holds the connection to deepgram
-           let deepgram = setupDeepgram(ws, askAndrespond, ws.chat);
+    const { id: userId } = req.user.userInfo;
+    //variables connected with this specific web socket connection
+    ws.globalMessage = "";
+    ws.keepAlive;
+    ws.interupted;
+    ws.interviewId;
+    //create a new chat instance for this specific interview session
+    ws.chat = createNewChat(userId);
+    //variable that holds the connection to deepgram
+    let deepgram = setupDeepgram(ws, askAndrespond, ws.chat);
 
     //message event on the websocket when a message is sent via the websocket it fires this callback function
     ws.on('message', async (message) => {
@@ -185,7 +185,6 @@ wss.on('connection', (ws, req) => {
                         console.log("error fetching data: ", error.message);
                     }
                     ws.globalMessage = "";
-                    ws.chunkCount = 0;
                     ws.close();
                     return;
                 } else if (parsedMessage.type == 'start_deepgram_session') {
@@ -199,9 +198,10 @@ wss.on('connection', (ws, req) => {
                             }
                             });
                         ws.interviewId = data.interviewId;
+                        seedChat(ws.chat, parsedMessage, ws.interviewId);
                         ws.send(JSON.stringify({ type: 'interviewId', interviewId: ws.interviewId }));
                         
-                               await askAndrespond(ws.chat, ws.globalMessage, ws, "intro", ws.chunkCount, parsedMessage);
+                        await askAndrespond(ws.chat, ws.globalMessage, ws, "intro");
                     }catch(error){
                         console.log("error fetching data: ", error.message);
                     }

@@ -1,29 +1,12 @@
-import {GoogleGenerativeAI} from '@google/generative-ai';
+import OpenAI from 'openai';
+import { randomUUID } from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config();
 
-//creates a connection to the Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_APIKEY);
-export const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash"});
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-// Creates a new chat instance for each interview to maintain proper context
-export function createNewChat() {
-    return model.startChat({
-        history: [],
-        generationConfig: {
-            maxOutputTokens: 150,
-            temperature: 0.1
-        },
-    });
-}
-
-//creates a basic askAndrespond function which dependant on the message type changes the prompting to the AI
-export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, parsedMessage){
-    try{
-        if(messageEvent === "intro"){
-            // For intro, send the setup prompt as the first message
-            msg = `
+const buildIntroPrompt = (parsedMessage) => `
         # INTERVIEWER ROLE & CONTEXT
         You are ${parsedMessage.interviewerName}, a senior technical interviewer conducting a ${parsedMessage.jobType} interview for the ${parsedMessage.position} position at ${parsedMessage.companyName}.
 
@@ -65,32 +48,108 @@ export async function askAndrespond(chat, msg, ws, messageEvent, chunkCount, par
 
         Remember: This is a REAL interview with a REAL person. Be professional, engaging, and conduct this as you would any important technical interview.
                     `;
-        }
-        // For all other messages, use the message as-is - Gemini will maintain context automatically
 
-        const result = await chat.sendMessageStream(msg);
+export function createNewChat(userId) {
+    return {
+        sessionId: randomUUID(),
+        userId,
+        interviewId: null,
+        history: []
+    };
+}
+
+export function seedChat(chat, parsedMessage, interviewId) {
+    chat.sessionId = randomUUID();
+    chat.interviewId = interviewId;
+    chat.history = [
+        {
+            role: 'developer',
+            content: buildIntroPrompt(parsedMessage)
+        }
+    ];
+}
+
+export async function askAndrespond(chat, msg, ws, messageEvent){
+    try{
+        console.log('[openai] askAndrespond:start', {
+            messageEvent,
+            historyLength: chat.history.length,
+            msgPreview: typeof msg === 'string' ? msg.slice(0, 100) : msg
+        });
+
+        if (messageEvent !== "intro") {
+            chat.history.push({
+                role: 'user',
+                content: msg
+            });
+        }
+
+        const streamInput = chat.history.map((message) => ({
+            role: message.role,
+            content: message.role === 'assistant'
+                ? [{ type: 'output_text', text: message.content }]
+                : [{ type: 'input_text', text: message.content }]
+        }));
+
+        if (messageEvent === "intro") {
+            streamInput.push({
+                role: 'user',
+                content: 'Provide your opening introduction now.'
+            });
+        }
+
+        const responseStream = await client.responses.stream({
+            model,
+            input: streamInput,
+            max_output_tokens: 300,
+            temperature: 0.7,
+        });
+
         let text = '';
         let textToSend = '';
-        //waits for each message stream which send chunks as they are available
-        for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
+        let chunkCount = 0;
+        const CHUNK_CHAR_THRESHOLD = 120;
+
+        for await (const event of responseStream) {
+            if (event.type !== 'response.output_text.delta') {
+                continue;
+            }
+
+            const chunkText = event.delta;
             textToSend += chunkText;
-            if(chunkCount % 1 == 0 && chunkCount != 0){
-                const jsonForFrontEnd = {chunkNumber: chunkCount - 1, chunk: textToSend}
-                //sends the data to the front end via the web socket connection
-                ws.send(JSON.stringify(jsonForFrontEnd));
+            text += chunkText;
+
+            const endsWithSentence = /[.!?\n]\s*$/.test(textToSend);
+            if (endsWithSentence || textToSend.length >= CHUNK_CHAR_THRESHOLD) {
+                ws.send(JSON.stringify({ chunkNumber: chunkCount, chunk: textToSend }));
+                chunkCount += 1;
                 textToSend = '';
             }
-            text += chunkText;
-            chunkCount += 0.5
         }
-        if(textToSend != ''){
-            const jsonForFrontEnd = {chunkNumber: chunkCount - 1, chunk: textToSend}
-            //sends the data to the front end via the web socket connection
-            ws.send(JSON.stringify(jsonForFrontEnd));
+
+        if (textToSend !== '') {
+            ws.send(JSON.stringify({ chunkNumber: chunkCount, chunk: textToSend }));
+            chunkCount += 1;
         }
+
+        console.log('[openai] stream-complete', {
+            sessionId: chat.sessionId,
+            totalTextLength: text.length,
+            chunkCount
+        });
+
+        chat.history.push({
+            role: 'assistant',
+            content: text
+        });
+
         return text;
     } catch(error){
-        console.log(error.message)
+        console.log('[openai] askAndrespond:error', {
+            sessionId: chat.sessionId,
+            interviewId: chat.interviewId,
+            messageEvent,
+            error: error.message
+        })
     }
 }
