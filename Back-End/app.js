@@ -7,7 +7,7 @@ import cors from 'cors';
 import db from './dbConnection.js';
 import cookieParser from 'cookie-parser';
 import { WebSocketServer } from 'ws';
-import { createNewChat, seedChat, askAndrespond } from './gemini/gemini.js';
+import { createNewChat, seedChat, askAndrespond } from './openai/openai.js';
 import { setupDeepgram, clearDeepgram } from './deepgram/deepgram.js';
 import jwt from 'jsonwebtoken';
 import axios from "axios";
