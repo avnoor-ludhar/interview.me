@@ -52,7 +52,7 @@ type WebSocketMessage = {
 
 type InterviewerType = {name: string, model: string}
 
-type MeetingState = {
+type MeetingState = { //alter this
     fromIntake?: boolean;
     firstName: string;
     lastName: string;
@@ -82,14 +82,14 @@ type ChatLogProps = {interviewer: InterviewerType | undefined,
     handleRecord: () => void
 }
 
-type interviewContent = {
+type interviewContent = { //alter this
     id: number,
     interview_id: number,
     chat: string,
     feedback: string | null
 }
 
-type dataForResults = {
+type dataForResults = { //alter this
     id: number,
     interview_id: number,
     chat: speaker[],

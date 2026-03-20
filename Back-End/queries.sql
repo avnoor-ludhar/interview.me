@@ -1,4 +1,6 @@
-CREATE TABLE user(
+CREATE EXTENSION IF NOT EXISTS citext;
+
+CREATE TABLE users(
     id SERIAL PRIMARY KEY,
     email citext,
     password_hash VARCHAR(512)

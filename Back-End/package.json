@@ -16,7 +16,7 @@
     "@deepgram/sdk": "^3.6.0",
     "@google-cloud/vertexai": "^1.9.2",
     "@google/generative-ai": "^0.12.0",
-    "@sentry/node": "^10.19.0",
+    "@sentry/node": "^10.45.0",
     "@sentry/tracing": "^7.120.4",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
