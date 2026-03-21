@@ -322,4 +322,39 @@ const getRecentInterview = async (req, res) => {
 };
 
 
-export { startInterview, endInterview, textToSpeechDeepgram, getFeedback, getRecentInterview};
+const searchInterviews = async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q || typeof q !== 'string' || q.trim().length === 0) {
+            return res.status(200).json({ results: [] });
+        }
+        const { rows } = await db.query(
+            `SELECT i.id, i.institution, i.typeofinterview, i.score, i.interview_date
+             FROM interviews i
+             WHERE i.user_id = $1 AND i.score IS NOT NULL AND i.institution ILIKE $2
+             ORDER BY i.interview_date DESC
+             LIMIT 10`,
+            [req.user.id, `%${q.trim()}%`]
+        );
+        res.status(200).json({ results: rows });
+    } catch (err) {
+        console.log("Search error: ", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+const getInterviewDetail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { rows } = await db.query(
+            `SELECT q.chat, q.feedback FROM QAOfInterview q WHERE q.interview_id = $1 LIMIT 1`,
+            [id]
+        );
+        res.status(200).json({ interview: rows[0] || null });
+    } catch (err) {
+        console.log("Detail error: ", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export { startInterview, endInterview, textToSpeechDeepgram, getFeedback, getRecentInterview, searchInterviews, getInterviewDetail};

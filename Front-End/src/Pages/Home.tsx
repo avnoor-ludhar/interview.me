@@ -10,6 +10,7 @@ import * as Sentry from '@sentry/react';
 import { Speaker, FeedbackData } from "@/utils/types";
 import ChatToView from "@/components/ChatToView";
 import FeedbackCarousel from "@/components/FeedbackCarousel";
+import InterviewSearch from "@/components/InterviewSearch";
 
 
 type RecentInterview = {
@@ -35,6 +36,7 @@ const Home = () => {
     const [recentInterviews, setRecentInterviews] = useState<RecentInterview[]>([]);
     const [latestInterviewChat, setLatestInterviewChat] = useState<Speaker[]>([]);
     const [latestFeedback, setLatestFeedback] = useState<FeedbackData | null>(null);
+    const [selectedLabel, setSelectedLabel] = useState<string>("Latest Interview");
 
     if (!user) {
         navigate('/login');
@@ -55,6 +57,7 @@ const Home = () => {
                 setRecentInterviews(response.data.recentInterviews);
                 setLatestInterviewChat(response.data.latestInterview ? JSON.parse(response.data.latestInterview.chat) : []);
                 setLatestFeedback(response.data.latestInterview?.feedback ? JSON.parse(response.data.latestInterview.feedback) : null);
+                setSelectedLabel("Latest Interview");
             }catch(err){
                 console.log(err);
                 // Capture the error in Sentry with additional context
@@ -71,6 +74,20 @@ const Home = () => {
             }
         });
     }
+
+    const onSelectInterview = async (interview: { id: number; institution: string; typeofinterview: string }) => {
+        try {
+            const response = await api.get<{ interview: { chat: string; feedback: string | null } | null }>(
+                `/api/interview/interviewDetail/${interview.id}`
+            );
+            const data = response.data.interview;
+            setLatestInterviewChat(data ? JSON.parse(data.chat) : []);
+            setLatestFeedback(data?.feedback ? JSON.parse(data.feedback) : null);
+            setSelectedLabel(`${interview.institution} — ${interview.typeofinterview}`);
+        } catch (err) {
+            console.log(err);
+        }
+    };
 
     useEffect(() => {
         fetchInterviewData()
@@ -110,15 +127,19 @@ const Home = () => {
                         </div>
                         {/* Latest Feedback */}
                         <div className="w-full lg:w-[95%] p-4 bg-darkGray rounded-3xl drop-shadow-2xl border-2">
-                            <h3 className="font-bold text-white">Latest Interview Feedback</h3>
+                            <h3 className="font-bold text-white">{selectedLabel} Feedback</h3>
                             <FeedbackCarousel feedback={latestFeedback} />
                         </div>
                     </div>
-                    {/* Card 5 */}
-                    <div className="w-3/4 lg:w-1/3 p-4 bg-darkGray rounded-3xl drop-shadow-2xl border-2 h-fit max-h-[500px]">
-                        <h3 className="font-bold text-white">Interview Chat Log</h3>
-                        <p className="text-white text-sm">View your most recent chat log!</p>
-                        <ChatToView interviewer={undefined} chatLog={latestInterviewChat} />
+                    <div className="w-3/4 lg:w-1/3 flex flex-col gap-10 mb-10">
+                        <div className="relative z-50 p-4 bg-darkGray rounded-3xl drop-shadow-2xl border-2 overflow-visible">
+                            <h3 className="font-bold text-white mb-2">Search Interviews</h3>
+                            <InterviewSearch onSelect={onSelectInterview} />
+                        </div>
+                        <div className="relative z-10 p-4 bg-darkGray rounded-3xl drop-shadow-2xl border-2 h-fit max-h-[500px]">
+                            <h3 className="font-bold text-white">Interview Chat Log</h3>
+                            <ChatToView interviewer={undefined} chatLog={latestInterviewChat} />
+                        </div>
                     </div>
                 </div>
 

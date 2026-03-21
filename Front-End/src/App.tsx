@@ -52,7 +52,7 @@ function App(): JSX.Element {
   return (
     <>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <div className='absolute left-0 top-0 w-full'>
+        <div className='min-h-screen w-full'>
           {shouldShowNavbar && <Navbar />}
           <Routes>
             <Route path='/login' element={!user ? <Login /> : <Navigate to='/home' />} />
