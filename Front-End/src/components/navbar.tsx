@@ -37,19 +37,6 @@ export default function Navbar(): JSX.Element{
                     </p>
                 </Link>
                 
-                <div className="flex-row items-center justify-evenly hidden lg:flex">
-                    <Link to='/login'>
-                        <Button variant="link" className="mx-5 text-lg">Packages</Button>
-                    </Link>
-                    <Link to='/login'>
-                        <Button variant="link" className="mx-5 text-lg">Packages</Button>
-                    </Link>
-                    <Link to='/login'>
-                        <Button variant="link" className="mx-5 text-lg">Packages</Button>
-                    </Link>
-    
-                </div>
-                
                 <div className="flex flex-row items-center">
                     <NavigationMenu className="lg:hidden flex">
                         <NavigationMenuList>

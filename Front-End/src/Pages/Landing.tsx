@@ -1,7 +1,6 @@
 
 
 import { Button } from "@/components/ui/button";
-import { TypeAnimation } from "react-type-animation";
 import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/redux/store";
 import { useNavigate } from "react-router-dom";
@@ -16,152 +15,178 @@ export default function Landing(): JSX.Element {
   
   return (
     <>
-      <div className="flex flex-col font-Work-Sans">
-        <div className="text-5xl font-medium md:text-7xl w-[85%] m-auto md:w-[100%] pt-12 bg-gradient-to-r from-pink-700 via-violet-500 to-indigo-600 text-transparent bg-clip-text ">
-          <h1>
-            Interview Smarter<br></br> Excel Faster with A.I
+      <div className="flex flex-col font-Work-Sans bg-[#050816] text-white">
+        <section className="w-full px-6 md:px-14 pt-12 md:pt-16 pb-10">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center rounded-full border border-indigo-500/40 bg-indigo-500/10 px-4 py-1 text-xs font-semibold tracking-[0.2em] uppercase text-indigo-300">
+                AI Interview Prep Platform
+              </div>
+              <h1 className="mt-6 text-5xl md:text-7xl font-semibold leading-tight bg-gradient-to-r from-pink-500 via-violet-400 to-indigo-300 text-transparent bg-clip-text">
+                Interview Smarter.
+                <br />
+                Excel Faster with AI.
+              </h1>
+              <p className="mt-6 max-w-2xl text-base md:text-lg text-slate-300 leading-8">
+                Practice realistic mock interviews, review performance feedback,
+                and track your progress over time. Interview.me helps you build
+                confidence before the real conversation happens.
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <Button
+                  className="shadow-2xl shadow-indigo-500/40"
+                  variant="outline"
+                  onClick={() => navigate('/signup')}
+                >
+                  Get Started
+                </Button>
+                <a href="#features">
+                  <Button className="shadow-2xl shadow-indigo-500/30" variant="outline">
+                    Learn more
+                  </Button>
+                </a>
+              </div>
+
+              <div className="mt-10 grid grid-cols-3 gap-4 max-w-xl">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-widest text-slate-400">Modes</p>
+                  <p className="mt-2 text-lg font-semibold text-white">Mock + Review</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-widest text-slate-400">Feedback</p>
+                  <p className="mt-2 text-lg font-semibold text-white">Instant</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-widest text-slate-400">Tracking</p>
+                  <p className="mt-2 text-lg font-semibold text-white">Progress</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 -z-10 rounded-[2rem] bg-gradient-to-br from-indigo-500/25 via-purple-500/15 to-pink-500/20 blur-3xl" />
+              <div className="rounded-[2rem] border border-white/10 bg-[#0b1220] p-4 shadow-2xl shadow-indigo-500/20">
+                <div className="flex items-center justify-between rounded-2xl bg-[#111827] px-4 py-3 border border-white/5">
+                  <div>
+                    <p className="text-sm text-slate-400">Today&apos;s focus</p>
+                    <p className="text-lg font-semibold text-white">Behavioral Interview Practice</p>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-300">
+                    Live AI
+                  </span>
+                </div>
+
+                <div className="mt-4 grid grid-cols-12 gap-4">
+                  <div className="col-span-4 rounded-2xl bg-[#0f172a] border border-white/5 p-4">
+                    <p className="text-xs uppercase tracking-widest text-slate-500">Dashboard</p>
+                    <div className="mt-4 space-y-3 text-sm text-slate-300">
+                      <div className="rounded-xl bg-white/5 px-3 py-2">Recent Interviews</div>
+                      <div className="rounded-xl bg-white/5 px-3 py-2">Feedback</div>
+                      <div className="rounded-xl bg-white/5 px-3 py-2">Performance</div>
+                    </div>
+                  </div>
+
+                  <div className="col-span-8 rounded-2xl bg-[#0f172a] border border-white/5 p-4">
+                    <p className="text-xs uppercase tracking-widest text-slate-500">Preview</p>
+                    <div className="mt-4 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-400/20 p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-white font-semibold">Mock Interview</p>
+                        <p className="text-indigo-300 text-sm">Score 8.7/10</p>
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-slate-300">
+                        Receive structured follow-up questions, score breakdowns,
+                        and concise recommendations to improve communication,
+                        depth, and STAR responses.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="features" className="w-full px-6 md:px-14 py-10 md:py-16">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center max-w-3xl mx-auto">
+              <h2 className="text-3xl md:text-5xl font-semibold text-white">
+                Built for interview prep that feels practical
+              </h2>
+              <p className="mt-4 text-slate-300 leading-8">
+                Every section is designed to keep the experience clear, useful,
+                and focused on the parts that actually help you improve.
+              </p>
+            </div>
+
+            <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="rounded-3xl border border-white/10 bg-[#0b1220] p-6">
+                <h3 className="text-xl font-semibold text-white">Mock Interview</h3>
+                <p className="mt-3 text-sm text-slate-300 leading-7">
+                  Practice with AI-led conversations that simulate a real
+                  interview and keep the pacing natural.
+                </p>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-[#0b1220] p-6">
+                <h3 className="text-xl font-semibold text-white">Essay Grader</h3>
+                <p className="mt-3 text-sm text-slate-300 leading-7">
+                  Review written responses with clear feedback that highlights
+                  what works and what needs more detail.
+                </p>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-[#0b1220] p-6">
+                <h3 className="text-xl font-semibold text-white">Admission Boost</h3>
+                <p className="mt-3 text-sm text-slate-300 leading-7">
+                  Build confidence through structured practice that supports
+                  better answers, stronger delivery, and more consistency.
+                </p>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-[#0b1220] p-6">
+                <h3 className="text-xl font-semibold text-white">Tailored Review</h3>
+                <p className="mt-3 text-sm text-slate-300 leading-7">
+                  Track performance across sessions so the dashboard shows
+                  progress, trends, and actionable feedback over time.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="w-full px-6 md:px-14 py-10 md:py-16">
+          <div className="max-w-7xl mx-auto rounded-[2rem] border border-white/10 bg-[#0b1220] px-6 py-10 md:px-10 md:py-14 shadow-2xl shadow-indigo-500/10">
+            <div className="grid lg:grid-cols-2 gap-10 items-center">
+              <div>
+                <h2 className="text-3xl md:text-5xl font-semibold text-white">
+                  Success is at your fingertips.
+                </h2>
+                <p className="mt-4 text-slate-300 leading-8">
+                  Join the waitlist to stay updated on new features and future
+                  improvements to Interview.me.
+                </p>
+              </div>
+
+              <div className="flex w-full flex-col sm:flex-row gap-3">
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  className="bg-[#050816] border-white/10 text-white placeholder:text-slate-500"
+                />
+                <Button type="submit" className="text-white shadow-lg bg-[#050816] hover:bg-[#050816]/50">
+                  Subscribe
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer className="flex flex-col md:flex-row gap-4 w-full justify-between px-6 md:px-14 py-8 items-center border-t border-white/10 font-Work-Sans text-sm text-slate-400">
+          <h1 className="bg-gradient-to-r from-pink-700 via-violet-500 to-indigo-600 text-transparent bg-clip-text text-xl font-bold">
+            Interview.me
           </h1>
-        </div>
-        <div className="text-md md:text-lg w-[85%] mt-8 md:w-[50%] m-auto">
-          <p>
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Facilis
-            unde distinctio optio iusto eius blanditiis. Nemo, nesciunt et amet
-            dicta tenetur, more yip yap ypo speak spoke poke loke doke foke
-            spoke mdikoasnf ndfjkldasn ffndsklf sandfkls adnfkl
+          <p className="text-center md:text-right">
+            Copyright © 2024 Interview.me Industries, LLC. All rights reserved.
           </p>
-        </div>
-        <div className="flex justify-around w-[50%] m-auto mt-5 outline-violet-600">
-          <Button className="shadow-2xl shadow-indigo-500/50" variant="outline">
-            Get Started
-          </Button>
-          <Button className="shadow-2xl shadow-indigo-500/50" variant="outline">
-            Learn more
-          </Button>
-        </div>
-
-        <div className="flex flex-row relative bg-slate-950  w-[65%] h-96 m-auto mt-24 mb-48 shadow-2xl shadow-indigo-500/50 blur-lg md:w-[70%]">
-          <div className="absolute w-[100%] bg-slate-800 justify-around flex">
-            <p>Home</p>
-            <p>Contact</p>
-            <p>Page</p>
-            <p>Packages</p>
-          </div>
-          <div className=" bg-slate-900 w-1/4 flex flex-col justify-evenly">
-            <p>AI</p>
-            <p>Select</p>
-            <p>Selection</p>
-            <p>More Selection</p>
-            <p>More Selection</p>
-          </div>
-          <div className="bg-slate-700 w-4/6 h-4/6 m-auto">
-            PLACEHOLDER!!!! WILL BE DASHBOARD, THIS DESIGN LOOKS 100X BETTER
-            TRUST, AND WILL BE MORE PRATICAL
-          </div>
-        </div>
-      </div>
-
-      <div className="font-medium font-Work-Sans text-2xl md:text-6xl pb-36 flex flex-col bg-gradient-to-r from-pink-500 via-violet-500 to-cyan-300 text-transparent bg-clip-text">
-        <h1 className="pb-2 md:text-base text-sky-600 text-xs ">
-          OVERPOWER WITH A.I
-        </h1>
-        <TypeAnimation
-          sequence={[
-            // Same substring at the start will only be typed out once, initially
-            "Ace your Medical School Interview",
-            1000, // wait 1s before replacing "Mice" with "Hamsters"
-            "Ace your Behavioural Interview",
-            1000,
-            "Ace your University Interview",
-            1000,
-            "Ace your Job Interview",
-            1000,
-          ]}
-          wrapper="span"
-          speed={50}
-          repeat={Infinity}
-        />
-        <p className="font-normal text-sm w-[80%] md:w-[50%] md:text-lg m-auto pt-5 text-white ">
-          At Interview.me, we revolutionize interview preparation with AI.
-          Practice personalized sessions to ace any interview effortlessly!
-        </p>
-
-        <div className="flex flex-col m-auto md:flex-row ">
-          <div className="flex flex-col text-left">
-            <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-[70%] h-56 mt-12 mx-16 md:mx-24 rounded-3xl shadow-md text-black shadow-violet-500 blur-sm"></div>
-            <div className="flex flex-col text-white font-normal ml-24 ">
-              <div className="mt-12">
-                <h3 className="text-3xl">Mock Interview</h3>
-              </div>
-              <div className="text-base ml-0.5 w-[90%] mt-1 text-slate-300">
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col text-left">
-            <div className="bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90% w-[70%] h-56 mx-16 md:mx-24 mt-12 rounded-3xl shadow-md shadow-indigo-600 blur-sm"></div>
-            <div className="flex flex-col text-white font-normal ml-24">
-              <div className="mt-12">
-                <h3 className="text-3xl">Essay Grader</h3>
-              </div>
-              <div className="text-base ml-0.5 w-[80%] mt-1 text-slate-300">
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col m-auto md:flex-row">
-          <div className="flex flex-col text-left align-center justify-center">
-            <div className="bg-gradient-to-r from-pink-500 to-yellow-500 w-[70%] h-56 mx-16 md:mx-24 mt-12 rounded-3xl shadow-md shadow-yellow-300 blur-sm"></div>
-            <div className="flex flex-col text-white font-normal ml-16 md:ml-24">
-              <div className="mt-12">
-                <h3 className="text-3xl">Improve Admission</h3>
-              </div>
-              <div className="text-base ml-0.5 w-[80%] text-slate-300">
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col text-left">
-            <div className="bg-gradient-to-r from-indigo-500 to-violet-300 w-[70%] h-56 mx-16 md:mx-24 mt-12 rounded-3xl shadow-md shadow-violet-600 blur-sm"></div>
-            <div className="flex flex-col text-white font-normal ml-24">
-              <div className="mt-12">
-                <h3 className="text-3xl">School Tailored</h3>
-              </div>
-              <div className="text-base ml-0.5 w-[80%] text-slate-300">
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex md:ml-14">
-        <div className="flex flex-col font-Work-Sans mb-10">
-          <div className="text-center md:text-left">
-            <h1 className="font-semibold text-4xl md:text-7xl w-[100%] text-indigo-400">
-              Success is at your fingertips{" "}
-            </h1>
-            <p className="text-center md:text-left pt-2 text-xl w-[80%] m-auto md:m-0 ">
-              Join our waitlist to be the first to know when Interview.me goes
-              live!
-            </p>
-          </div>
-
-          <div className="flex max-w-sm space-x-2 mt-5 m-auto md:m-0 md:mt-40">
-            <Input type="email" placeholder="Email" />
-            <Button type="submit" className="text-white">
-              Subscribe
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-row w-full justify-between mt-48 items-center h-52 md:border-t-2 font-Work-Sans ">
-            <h1 className="ml-5 bg-gradient-to-r from-pink-700 via-violet-500 to-indigo-600 text-transparent bg-clip-text text-xl font-bold">Interview.me</h1>
-            <p className="text-indigo-400 text-sm font-semibold mr-5">Copyright © 2024 Interview.me Industries, LLC. All rights reserved.</p>
+        </footer>
       </div>
     </>
   );
