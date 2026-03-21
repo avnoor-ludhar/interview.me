@@ -1,17 +1,8 @@
 "use client"
 
-import * as React from "react"
-import { TrendingUp } from "lucide-react"
+import { useMemo } from "react"
 import { Label, Pie, PieChart } from "recharts"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import {
   ChartConfig,
   ChartContainer,
@@ -19,98 +10,82 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-export const description = "A donut chart with text"
-
-const chartData = [
-  { browser: "1-3", visitors: 1.0, fill: "#FF6B6B" },
-  { browser: "4-5", visitors: 1.0, fill: "#FFA94D" },
-  { browser: "6-7", visitors: 1.0, fill: "#805AD5" },
-  { browser: "8-9", visitors: 1.0, fill: "#4FD1C5" },
-  { browser: "10!", visitors: 1.0, fill: "#3182CE" },
-];
-
+type Interview = {
+  id: number;
+  institution: string;
+  score: number;
+  interview_date: string;
+};
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
+  score: {
+    label: "Score",
   },
-  chrome: {
-    label: "Chrome",
-    color: "hsl(var(--chart-1))",
-  },
-  safari: {
-    label: "Safari",
-    color: "hsl(var(--chart-2))",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "hsl(var(--chart-3))",
-  },
-  edge: {
-    label: "Edge",
-    color: "hsl(var(--chart-4))",
-  },
-  other: {
-    label: "Other",
-    color: "hsl(var(--chart-5))",
+  remainder: {
+    label: "Remainder",
   },
 } satisfies ChartConfig
 
-export function Area() {
-  const totalVisitors = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.visitors, 0)
-  }, [])
+export function Area({ interviews }: { interviews: Interview[] }) {
+  const average = useMemo(() => {
+    if (interviews.length === 0) return 0;
+    const sum = interviews.reduce((acc, i) => acc + i.score, 0);
+    return Math.round((sum / interviews.length) * 10) / 10;
+  }, [interviews]);
+
+  const chartData = useMemo(() => [
+    { name: "Score", value: average, fill: "#4b0082" },
+    { name: "Remainder", value: 10 - average, fill: "#2d2d2d" },
+  ], [average]);
 
   return (
-  
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
+    <ChartContainer
+      config={chartConfig}
+      className="mx-auto aspect-square max-h-[250px]"
+    >
+      <PieChart>
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent hideLabel />}
+        />
+        <Pie
+          data={chartData}
+          dataKey="value"
+          nameKey="name"
+          innerRadius={60}
+          strokeWidth={5}
         >
-          <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Pie
-              data={chartData}
-              dataKey="visitors"
-              nameKey="browser"
-              innerRadius={60}
-              strokeWidth={5}
-            >
-              <Label
-                content={({ viewBox }) => {
-                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                    return (
-                      <text
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        <tspan
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          className="fill-foreground text-3xl font-bold"
-                        >
-                          {totalVisitors.toLocaleString()}
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground"
-                        >
-                          / 10
-                        </tspan>
-                      </text>
-                    )
-                  }
-                }}
-              />
-            </Pie>
-          </PieChart>
-        </ChartContainer>
-  
+          <Label
+            content={({ viewBox }) => {
+              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                return (
+                  <text
+                    x={viewBox.cx}
+                    y={viewBox.cy}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                  >
+                    <tspan
+                      x={viewBox.cx}
+                      y={viewBox.cy}
+                      className="fill-foreground text-3xl font-bold"
+                    >
+                      {average}
+                    </tspan>
+                    <tspan
+                      x={viewBox.cx}
+                      y={(viewBox.cy || 0) + 24}
+                      className="fill-muted-foreground"
+                    >
+                      / 10
+                    </tspan>
+                  </text>
+                )
+              }
+            }}
+          />
+        </Pie>
+      </PieChart>
+    </ChartContainer>
   )
 }

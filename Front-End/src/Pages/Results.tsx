@@ -52,7 +52,7 @@ const Results = () => {
                         id: result.id,
                         interview_id: result.interview_id,
                         chat: JSON.parse(result.chat),
-                        feedback: result.feedback
+                        feedback: result.feedback ? JSON.parse(result.feedback) : null
                     }
                     setData(data); // Store data in state
                     setLoading(false); // Stop loading when data is available
@@ -97,11 +97,20 @@ const Results = () => {
                         <div className="space-y-4">
                             <div className="p-4 rounded-lg border border-gray-200">
                                 <h2 className="text-2xl font-semibold mb-2">Feedback:</h2>
-                                {data?.feedback?.split('\n\n').map((block: string, index: number) => (
-                                    <div key={index} className="bg-gray-700 p-4 rounded-lg border mb-2">
-                                        <ReactMarkdown>{block}</ReactMarkdown>
-                                    </div>
-                                )) || <p>Feedback Loading...</p>}
+                                {data?.feedback ? (
+                                    <>
+                                        <div className="bg-gray-700 p-4 rounded-lg border mb-2">
+                                            <p className="text-xl font-bold">Grade: {data.feedback.grade}/10</p>
+                                            <ReactMarkdown>{data.feedback.summary}</ReactMarkdown>
+                                        </div>
+                                        {data.feedback.sections.map((section, index: number) => (
+                                            <div key={index} className="bg-gray-700 p-4 rounded-lg border mb-2">
+                                                <h3 className="text-lg font-semibold mb-2">{section.title}</h3>
+                                                <ReactMarkdown>{section.content}</ReactMarkdown>
+                                            </div>
+                                        ))}
+                                    </>
+                                ) : <p>Feedback Loading...</p>}
                             </div>
 
                             <div className="flex flex-col items-center p-4 rounded-lg border border-gray-200">

@@ -143,8 +143,19 @@ const evaluateInterview = async (chatLog) => {
         Provide detailed feedback based on a rubric you will create and deem fit for an interview. 
         State specifically what the user did incorrectly for each section of the rubric, and provide a mock 
         answer that is well done. Include suggestions for improvement. Do not send the rubric, just keep it mentally you should not be able to see it. 
-        Please also provide the 1-10 score in a large bold font, it should be the first thing you see, and large. Be more brief, and when you write the score write Grade: X/10. 
-        Don't write the word feedback, just write the feedback
+        Return ONLY valid JSON with this exact shape:
+        {
+          "grade": number,
+          "summary": string,
+          "sections": [
+            {
+              "title": string,
+              "content": string
+            }
+          ]
+        }
+        The grade must be an integer from 1 to 10.
+        Do not wrap the JSON in markdown fences.
 
         Here is the interview transcription:
         ${JSON.stringify(chatLog)}
@@ -164,19 +175,11 @@ const evaluateInterview = async (chatLog) => {
 
       const feedbackResult = await geminiSpan;
       const detailedFeedback = feedbackResult.response.candidates[0].content.parts[0].text;
-
-      // Extract score directly from the feedback
-      const scoreMatch = detailedFeedback.match(/Grade:\s*(\d{1,2})/);
-      const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
-
-      if (score === null || isNaN(score)) {
-        console.error("Could not extract score.");
-        return { error: "Failed to extract score." };
-      }
+      const parsed = JSON.parse(detailedFeedback);
 
       return {
-        score: score,
-        feedback: detailedFeedback,
+        score: parsed.grade,
+        feedback: JSON.stringify(parsed),
       };
     } catch (error) {
       console.error("Error evaluating interview:", error);
@@ -300,12 +303,21 @@ const getFeedback = async (req, res) => {
 
 const getRecentInterview = async (req, res) => {
     try{
-      const {rows} = await db.query('SELECT * FROM interviews WHERE interview_date IS NOT NULL ORDER BY interview_date DESC LIMIT 1');
-      console.log(rows);
-      res.status(200).json({hello: "HI"});
+      const { rows: recentInterviews } = await db.query(
+        'SELECT id, institution, typeofinterview, score, interview_date FROM interviews WHERE score IS NOT NULL ORDER BY interview_date DESC LIMIT 3'
+      );
+
+      const { rows: latestInterviewRows } = await db.query(
+        'SELECT q.chat, q.feedback FROM QAOfInterview q JOIN interviews i ON i.id = q.interview_id ORDER BY i.interview_date DESC, i.id DESC LIMIT 1'
+      );
+
+      res.status(200).json({
+        recentInterviews,
+        latestInterview: latestInterviewRows[0] || null,
+      });
     }catch(err){
       console.log("Database error: ", err);
-      res.status(500).json({error: "EWIE"})
+      res.status(500).json({error: "Internal Server Error"})
     }
 };
 

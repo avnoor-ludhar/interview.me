@@ -3,18 +3,38 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Graph } from "../components/Graph";
 import { Area } from "../components/Area";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 import { LogoutHook, useLogout } from "@/hooks/useLogout";
 import * as Sentry from '@sentry/react';
+import { Speaker, FeedbackData } from "@/utils/types";
+import ChatToView from "@/components/ChatToView";
+import FeedbackCarousel from "@/components/FeedbackCarousel";
 
 
+type RecentInterview = {
+    id: number;
+    institution: string;
+    typeofinterview: string;
+    score: number;
+    interview_date: string;
+};
 
+type RecentInterviewResponse = {
+    recentInterviews: RecentInterview[];
+    latestInterview: {
+        chat: string;
+        feedback: string | null;
+    } | null;
+};
 
 const Home = () => {
     const user = useAppSelector((state) => state.user.user);
     const navigate = useNavigate();
     const {logout}: LogoutHook = useLogout();
+    const [recentInterviews, setRecentInterviews] = useState<RecentInterview[]>([]);
+    const [latestInterviewChat, setLatestInterviewChat] = useState<Speaker[]>([]);
+    const [latestFeedback, setLatestFeedback] = useState<FeedbackData | null>(null);
 
     if (!user) {
         navigate('/login');
@@ -31,8 +51,10 @@ const Home = () => {
             }
         }, async () => {
             try{
-                const response = await api.get("/api/interview/getRecentInterview");
-                console.log(response);
+                const response = await api.get<RecentInterviewResponse>("/api/interview/getRecentInterview");
+                setRecentInterviews(response.data.recentInterviews);
+                setLatestInterviewChat(response.data.latestInterview ? JSON.parse(response.data.latestInterview.chat) : []);
+                setLatestFeedback(response.data.latestInterview?.feedback ? JSON.parse(response.data.latestInterview.feedback) : null);
             }catch(err){
                 console.log(err);
                 // Capture the error in Sentry with additional context
@@ -78,40 +100,25 @@ const Home = () => {
                         <div className="w-full lg:w-[45%] max-w-[400px] p-4 bg-darkGray rounded-3xl drop-shadow-2xl h-[300px] border-2">
                             <h3 className="font-bold text-white">Recent Performance</h3>
                             <p className="text-white text-sm">Scored from 1-10</p>
-                            <Graph />
+                            <Graph interviews={recentInterviews} />
                         </div>
                         {/* Card 2 */}
                         <div className="w-full lg:w-[45%] max-w-[400px] p-4 bg-darkGray rounded-3xl drop-shadow-2xl h-[300px] border-2">
                             <h3 className="font-bold text-white">Average Performance</h3>
                             <p className="text-white text-sm">Scale from 1-10</p>
-                            <Area />
+                            <Area interviews={recentInterviews} />
                         </div>
-                        {/* Card 3 */}
-                        <div className="w-full lg:w-[45%] max-w-[400px] p-4 bg-darkGray rounded-3xl drop-shadow-2xl h-[300px] border-2">
-                            <h3 className="font-bold text-white">Weak Points</h3>
-                            <p className="text-white text-sm">These are things you can improve upon</p>
-                            <ul className="list-disc list-inside text-white pt-8 text-left ml-4 space-y-4">
-                                <li>Weakness 1: Confidence</li>
-                                <li>Weakness 2: Fluency</li>
-                                <li>Weakness 3: Speed</li>
-                            </ul>
-                        </div>
-                        {/* Card 4 */}
-                        <div className="w-full lg:w-[45%] max-w-[400px] p-4 bg-darkGray rounded-3xl drop-shadow-2xl h-[300px] border-2">
-                            <h3 className="font-bold text-white">Strong Points</h3>
-                            <p className="text-white text-sm">These are things you do well!</p>
-                            <ul className="list-disc list-inside text-white pt-8 text-left ml-4 space-y-4">
-                                <li>Strength 1: Confidence</li>
-                                <li>Strength 2: Fluency</li>
-                                <li>Strength 3: Speed</li>
-                            </ul>
+                        {/* Latest Feedback */}
+                        <div className="w-full lg:w-[95%] p-4 bg-darkGray rounded-3xl drop-shadow-2xl border-2">
+                            <h3 className="font-bold text-white">Latest Interview Feedback</h3>
+                            <FeedbackCarousel feedback={latestFeedback} />
                         </div>
                     </div>
                     {/* Card 5 */}
                     <div className="w-3/4 lg:w-1/3 p-4 bg-darkGray rounded-3xl drop-shadow-2xl border-2 h-fit max-h-[500px]">
                         <h3 className="font-bold text-white">Interview Chat Log</h3>
                         <p className="text-white text-sm">View your most recent chat log!</p>
-                        {/* <Chat /> */}
+                        <ChatToView interviewer={undefined} chatLog={latestInterviewChat} />
                     </div>
                 </div>
 

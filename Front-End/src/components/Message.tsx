@@ -1,6 +1,6 @@
-import { speaker } from "@/utils/types";
+import { Speaker } from "@/utils/types";
 
-const Message = ({ person, interviewerName }: {person: speaker, interviewerName: string | undefined}) =>{
+const Message = ({ person, interviewerName }: {person: Speaker, interviewerName: string | undefined}) =>{
     return(
         <>
             <div className={`relative w-full h-fit z-20 mb-4`}>

@@ -2,7 +2,7 @@ import { RxCross2 } from "react-icons/rx";
 import { FaMicrophone, FaMicrophoneSlash, FaPlay } from "react-icons/fa";
 import { BsCameraVideoFill, BsCameraVideoOffFill} from "react-icons/bs";
 import { Button } from "./ui/button";
-import { speaker } from "@/utils/types";
+import { Speaker } from "@/utils/types";
 
 type MeetingOptionsProps = {
     isConnected: boolean,
@@ -12,7 +12,7 @@ type MeetingOptionsProps = {
     isVideoOn: boolean,
     isRecording: boolean,
     toggleMute: () => void,
-    currentSpeaker: speaker
+    currentSpeaker: Speaker
 }
 
 
