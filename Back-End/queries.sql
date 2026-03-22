@@ -35,3 +35,6 @@ ADD COLUMN feedback TEXT;
 
 ALTER TABLE interviews
 ADD COLUMN interview_date DATE;
+
+ALTER TABLE interviews
+ADD COLUMN intake JSONB;

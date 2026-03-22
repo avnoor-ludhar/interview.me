@@ -24,6 +24,29 @@ const generativeModel = vertex_ai.preview.getGenerativeModel({
 
 const deepgram = createClient(process.env.DEEPGRAM_APIKEY);
 
+const handleIntake = async (req, res) => {
+  try {
+    const { intake } = req.body;
+
+    if (!intake) {
+      return res.status(400).json({ error: "Missing intake data." });
+    }
+  
+    const result = await db.query(
+        "UPDATE interviews SET intake = $1 WHERE id = (SELECT id FROM interviews WHERE user_id = $2 ORDER BY interview_date DESC LIMIT 1) RETURNING *",
+        [JSON.stringify(intake), req.user.id]
+      );
+    
+    return res.status(201).json({
+      message: "Intake data saved successfully.",
+      data: result.rows[0],
+    });
+  } catch (error) {
+      console.error(error);
+      return res.status(403).json({ error: "Could not insert into database." });
+    }
+}
+
 // Start Interview Function
 const startInterview = async (req, res) => {
   // Create a span for the start interview operation
@@ -147,8 +170,8 @@ const evaluateInterview = async (chatLog) => {
         Don't write the word feedback, just write the feedback
 
         Here is the interview transcription:
-        ${JSON.stringify(chatLog)}
-      `;
+        ${JSON.stringify(chatLog)} 
+      `; //so here we passed the prompt and the chat log, and we want it to return a score and detailed feedback. We will then store the detailed feedback in the database and show it to the user, and we will show the score to the user and also store it in the database.
 
       const feedbackRequest = {
         contents: [{ role: 'user', parts: [{ text: feedbackPrompt }] }],
@@ -310,4 +333,4 @@ const getRecentInterview = async (req, res) => {
 };
 
 
-export { startInterview, endInterview, textToSpeechDeepgram, getFeedback, getRecentInterview};
+export { handleIntake, startInterview, endInterview, textToSpeechDeepgram, getFeedback, getRecentInterview};
