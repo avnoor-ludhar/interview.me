@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --import ./sentry.js app.js",
+    "create-model": "ollama create interview-qwen -f ./Modelfile",
+    "dev": "ollama serve & node --import ./sentry.js app.js",
     "start": "node --import ./sentry.js app.js"
   },
   "keywords": [],
