@@ -32,12 +32,14 @@
     "react-router-dom": "^6.22.3",
     "react-type-animation": "^3.2.0",
     "recharts": "^2.15.0",
+    "lodash": "^4.17.21",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20.11.25",
     "@types/react": "^18.2.56",
+    "@types/lodash": "^4.17.0",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",

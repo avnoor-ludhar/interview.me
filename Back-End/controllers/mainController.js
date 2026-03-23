@@ -161,6 +161,7 @@ const evaluateInterview = async (userid, chatLog) => {
     }
   }, async () => {
     try {
+<<<<<<< HEAD
       const prompt = [
       {
         "role": "system",
@@ -169,6 +170,26 @@ const evaluateInterview = async (userid, chatLog) => {
       {intake},
       {chatLog}
     ]; //so here we passed the prompt with intake and the chat log, and we want it to return a score and detailed feedback. We will then store the detailed feedback in the database and show it to the user, and we will show the score to the user and also store it in the database.
+=======
+      const feedbackPrompt = `
+        You will be provided with a text transcription based on an interview. The criteria is STAR method. 
+        Provide detailed feedback based on a rubric you will create and deem fit for an interview. 
+        State specifically what the user did incorrectly for each section of the rubric, and provide a mock 
+        answer that is well done. Include suggestions for improvement. Do not send the rubric, just keep it mentally you should not be able to see it. 
+        Return ONLY valid JSON with this exact shape:
+        {
+          "grade": number,
+          "summary": string,
+          "sections": [
+            {
+              "title": string,
+              "content": string
+            }
+          ]
+        }
+        The grade must be an integer from 1 to 10.
+        Do not wrap the JSON in markdown fences.
+>>>>>>> f7c17908c10df0f9c6ae7929f569a2c63addc2a4
 
       // const feedbackRequest = {
       //   contents: [{ role: 'user', parts: [{ text: Prompt }] }],
@@ -177,19 +198,11 @@ const evaluateInterview = async (userid, chatLog) => {
       const feedbackResult = await ollama.generate({ model, prompt });
 
       const detailedFeedback = feedbackResult.response.candidates[0].content.parts[0].text;
-
-      // Extract score directly from the feedback
-      const scoreMatch = detailedFeedback.match(/Grade:\s*(\d{1,2})/);
-      const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
-
-      if (score === null || isNaN(score)) {
-        console.error("Could not extract score.");
-        return { error: "Failed to extract score." };
-      }
+      const parsed = JSON.parse(detailedFeedback);
 
       return {
-        score: score,
-        feedback: detailedFeedback,
+        score: parsed.grade,
+        feedback: JSON.stringify(parsed),
       };
     } catch (error) {
       console.error("Error evaluating interview:", error);
@@ -373,14 +386,58 @@ const getFeedback = async (req, res) => {
 
 const getRecentInterview = async (req, res) => {
     try{
-      const {rows} = await db.query('SELECT * FROM interviews WHERE interview_date IS NOT NULL ORDER BY interview_date DESC LIMIT 1');
-      console.log(rows);
-      res.status(200).json({hello: "HI"});
+      const { rows: recentInterviews } = await db.query(
+        'SELECT id, institution, typeofinterview, score, interview_date FROM interviews WHERE score IS NOT NULL ORDER BY interview_date DESC LIMIT 3'
+      );
+
+      const { rows: latestInterviewRows } = await db.query(
+        'SELECT q.chat, q.feedback FROM QAOfInterview q JOIN interviews i ON i.id = q.interview_id ORDER BY i.interview_date DESC, i.id DESC LIMIT 1'
+      );
+
+      res.status(200).json({
+        recentInterviews,
+        latestInterview: latestInterviewRows[0] || null,
+      });
     }catch(err){
       console.log("Database error: ", err);
-      res.status(500).json({error: "EWIE"})
+      res.status(500).json({error: "Internal Server Error"})
     }
 };
 
 
-export { startInterview, endInterview, textToSpeechDeepgram, getFeedback, getRecentInterview};
+const searchInterviews = async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q || typeof q !== 'string' || q.trim().length === 0) {
+            return res.status(200).json({ results: [] });
+        }
+        const { rows } = await db.query(
+            `SELECT i.id, i.institution, i.typeofinterview, i.score, i.interview_date
+             FROM interviews i
+             WHERE i.user_id = $1 AND i.score IS NOT NULL AND i.institution ILIKE $2
+             ORDER BY i.interview_date DESC
+             LIMIT 10`,
+            [req.user.id, `%${q.trim()}%`]
+        );
+        res.status(200).json({ results: rows });
+    } catch (err) {
+        console.log("Search error: ", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+const getInterviewDetail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { rows } = await db.query(
+            `SELECT q.chat, q.feedback FROM QAOfInterview q WHERE q.interview_id = $1 LIMIT 1`,
+            [id]
+        );
+        res.status(200).json({ interview: rows[0] || null });
+    } catch (err) {
+        console.log("Detail error: ", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export { startInterview, endInterview, textToSpeechDeepgram, getFeedback, getRecentInterview, searchInterviews, getInterviewDetail};

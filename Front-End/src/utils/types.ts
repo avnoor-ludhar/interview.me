@@ -1,4 +1,4 @@
-type speaker = {
+type Speaker = {
     speaker: string,
     text: string
 };
@@ -40,8 +40,8 @@ type audioQueueState = {
 }
 
 type ChatLogState = {
-    chatLog: speaker[],
-    currentSpeaker: speaker;
+    chatLog: Speaker[],
+    currentSpeaker: Speaker;
     prevChunkNumber: number;
     queueForGemini: dataFromGemini[];
 }
@@ -74,7 +74,7 @@ type videoProps = {
 
 type AiCircleProps = {
     interviewer: InterviewerType | undefined,
-    currentSpeaker: speaker
+    currentSpeaker: Speaker
 }
 
 type ChatLogProps = {interviewer: InterviewerType | undefined, 
@@ -82,7 +82,29 @@ type ChatLogProps = {interviewer: InterviewerType | undefined,
     handleRecord: () => void
 }
 
-type interviewContent = { //alter this
+type FeedbackSection = {
+    title: string,
+    content: string
+}
+
+type FeedbackData = {
+    grade: number,
+    summary: string,
+    sections: FeedbackSection[]
+}
+
+type FeedbackSection = {
+    title: string,
+    content: string
+}
+
+type FeedbackData = {
+    grade: number,
+    summary: string,
+    sections: FeedbackSection[]
+}
+
+type interviewContent = {
     id: number,
     interview_id: number,
     chat: string,
@@ -92,14 +114,14 @@ type interviewContent = { //alter this
 type dataForResults = { //alter this
     id: number,
     interview_id: number,
-    chat: speaker[],
-    feedback: string | null
+    chat: Speaker[],
+    feedback: FeedbackData | null
 }
 
 type ViewChatLogProps = {
     interviewer: InterviewerType | undefined, 
-    chatLog: speaker[] | undefined
+    chatLog: Speaker[] | undefined
 }
 
 
-export type {ChatLogState, MediaStreamRecorderType, speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps, AiCircleProps, ChatLogProps, interviewContent, dataForResults, ViewChatLogProps};
+export type {ChatLogState, MediaStreamRecorderType, Speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps, AiCircleProps, ChatLogProps, FeedbackSection, FeedbackData, interviewContent, dataForResults, ViewChatLogProps};

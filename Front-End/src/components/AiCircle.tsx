@@ -1,4 +1,4 @@
-import { AiCircleProps, InterviewerType, speaker } from "@/utils/types";
+import { AiCircleProps } from "@/utils/types";
 
 
 const AiCircle = ({ interviewer, currentSpeaker }: AiCircleProps) => {

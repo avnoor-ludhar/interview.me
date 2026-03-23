@@ -1,6 +1,7 @@
 import express from 'express';
 import requireAuth from '../middleware/requireAuth.js';
-import { startInterview, textToSpeechDeepgram, endInterview, getFeedback, getRecentInterview } from '../controllers/mainController.js';
+import db from '../dbConnection.js';
+import { startInterview, textToSpeechDeepgram, endInterview, getFeedback, getRecentInterview, searchInterviews, getInterviewDetail } from '../controllers/mainController.js';
 
 // Create router instance
 const router = express.Router();
@@ -21,5 +22,9 @@ router.post('/endInterview', endInterview);
 router.get('/feedback/:id', getFeedback);
 
 router.get('/getRecentInterview', getRecentInterview)
+
+router.get('/searchInterviews', searchInterviews)
+
+router.get('/interviewDetail/:id', getInterviewDetail)
 
 export default router;
