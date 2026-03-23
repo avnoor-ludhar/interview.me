@@ -161,7 +161,6 @@ const evaluateInterview = async (userid, chatLog) => {
     }
   }, async () => {
     try {
-<<<<<<< HEAD
       const prompt = [
       {
         "role": "system",
@@ -170,27 +169,6 @@ const evaluateInterview = async (userid, chatLog) => {
       {intake},
       {chatLog}
     ]; //so here we passed the prompt with intake and the chat log, and we want it to return a score and detailed feedback. We will then store the detailed feedback in the database and show it to the user, and we will show the score to the user and also store it in the database.
-=======
-      const feedbackPrompt = `
-        You will be provided with a text transcription based on an interview. The criteria is STAR method. 
-        Provide detailed feedback based on a rubric you will create and deem fit for an interview. 
-        State specifically what the user did incorrectly for each section of the rubric, and provide a mock 
-        answer that is well done. Include suggestions for improvement. Do not send the rubric, just keep it mentally you should not be able to see it. 
-        Return ONLY valid JSON with this exact shape:
-        {
-          "grade": number,
-          "summary": string,
-          "sections": [
-            {
-              "title": string,
-              "content": string
-            }
-          ]
-        }
-        The grade must be an integer from 1 to 10.
-        Do not wrap the JSON in markdown fences.
->>>>>>> f7c17908c10df0f9c6ae7929f569a2c63addc2a4
-
       // const feedbackRequest = {
       //   contents: [{ role: 'user', parts: [{ text: Prompt }] }],
       // };

@@ -93,17 +93,6 @@ type FeedbackData = {
     sections: FeedbackSection[]
 }
 
-type FeedbackSection = {
-    title: string,
-    content: string
-}
-
-type FeedbackData = {
-    grade: number,
-    summary: string,
-    sections: FeedbackSection[]
-}
-
 type interviewContent = {
     id: number,
     interview_id: number,
