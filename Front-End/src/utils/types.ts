@@ -82,15 +82,25 @@ type ChatLogProps = {interviewer: InterviewerType | undefined,
     handleRecord: () => void
 }
 
-type FeedbackSection = {
-    title: string,
-    content: string
+type StarCategory = {
+    score: number,
+    issues: string[],
+    improvements: string[]
+}
+
+type StarFeedback = {
+    situation: StarCategory,
+    task: StarCategory,
+    action: StarCategory,
+    result: StarCategory
 }
 
 type FeedbackData = {
     grade: number,
     summary: string,
-    sections: FeedbackSection[]
+    star: StarFeedback,
+    mockAnswer: string,
+    suggestions: string[]
 }
 
 type interviewContent = {
@@ -113,4 +123,4 @@ type ViewChatLogProps = {
 }
 
 
-export type {ChatLogState, MediaStreamRecorderType, Speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps, AiCircleProps, ChatLogProps, FeedbackSection, FeedbackData, interviewContent, dataForResults, ViewChatLogProps};
+export type {ChatLogState, MediaStreamRecorderType, Speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps, AiCircleProps, ChatLogProps, StarCategory, StarFeedback, FeedbackData, interviewContent, dataForResults, ViewChatLogProps};

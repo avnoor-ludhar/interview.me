@@ -155,22 +155,6 @@ export default function Meeting(): JSX.Element {
     };
   }, [killSocket]);
 
-  //   const endInterview = async () => {
-  //     await api.post(`/api/interview/end${interviewId}`, {
-  //       interviewId,
-  //       chatLog,
-  //       intake: {
-  //         firstName: state?.firstName ?? "",
-  //         lastName: state?.lastName ?? "",
-  //         jobType: state?.jobType ?? "",
-  //         position: state?.position ?? "",
-  //         companyName: state?.companyName ?? "",
-  //         jobDescription: state?.jobDescription ?? "",
-  //         interviewer: state?.interviewer ?? null,
-  //       },
-  //     });
-  //   };
-
   return (
     <div className="h-[100vh] w-[100vw] absolute top-0 left-0 z-10">
       <div className="w-full h-4 flex flex-row justify-between items-center p-8">
