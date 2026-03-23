@@ -3,24 +3,8 @@ import db from "../dbConnection.js";
 import { VertexAI } from '@google-cloud/vertexai';
 import { createClient } from "@deepgram/sdk";
 import * as Sentry from '@sentry/node';
+import ollama from 'ollama';
 dotenv.config();
-
-// Initialize Vertex AI and Model
-const vertex_ai = new VertexAI({
-  project: 'finetune-446818',
-  location: 'us-central1',
-});
-
-const model = 'gemini-1.5-flash-002';
-
-const generativeModel = vertex_ai.preview.getGenerativeModel({
-  model: model,
-  generationConfig: {
-    maxOutputTokens: 8192,
-    temperature: 0.5,
-    topP: 0.95,
-  },
-});
 
 const deepgram = createClient(process.env.DEEPGRAM_APIKEY);
 
@@ -32,13 +16,25 @@ const startInterview = async (req, res) => {
     name: 'Start Interview',
     tags: {
       user_id: req.user?.id,
-      interview_type: req.body?.typeofinterview,
-      company: req.body?.company
+      interview_type: req.body?.intake?.jobType ?? req.body?.typeofinterview,
+      company: req.body?.intake?.companyName ?? req.body?.company
     }
   }, async () => {
     const user = req.user;
-    const typeofinterview = req.body?.typeofinterview;
-    const institution = req.body?.company;
+    const intake = req.body?.intake;
+    const typeofinterview = intake?.jobType ?? req.body?.typeofinterview;
+    const institution = intake?.companyName ?? req.body?.company;
+
+    if (
+      !intake?.firstName ||
+      !intake?.lastName ||
+      !intake?.jobType ||
+      !intake?.position ||
+      !intake?.companyName ||
+      !intake?.jobDescription
+    ) {
+      return res.status(400).json({ error: "Missing intake data." });
+    }
 
     try {
       // Create span for database insert
@@ -47,8 +43,8 @@ const startInterview = async (req, res) => {
         name: 'Create Interview Record'
       }, async () => {
         return await db.query(
-          "INSERT INTO interviews (user_id, typeofinterview, institution, interview_date) VALUES ($1, $2, $3, $4) RETURNING *", 
-          [user.id, typeofinterview, institution, new Date()]
+          "INSERT INTO interviews (user_id, typeofinterview, institution, interview_date, intake) VALUES ($1, $2, $3, $4, $5) RETURNING *", 
+          [user.id, typeofinterview, institution, new Date(), JSON.stringify(intake)]
         );
       });
 
@@ -127,54 +123,33 @@ const textToSpeechDeepgram = async (req, res) => {
 };
 
 // Function to evaluate interview
-const evaluateInterview = async (chatLog) => {
+const evaluateInterview = async (userid, chatLog, interviewId) => {
+  const model = 'finetunedmodel';
+  const intakeResult = await db.query(
+        "SELECT intake FROM interviews WHERE id = $1 AND user_id = $2",
+        [interviewId, userid]
+      );
   // Create a span for the AI evaluation
   const evaluationSpan = Sentry.startSpan({
-    op: 'ai.gemini_evaluation',
-    name: 'Gemini Interview Evaluation',
+    op: 'ai.evaluation',
+    name: 'Ollama Interview Evaluation',
     tags: {
-      model: 'gemini-1.5-flash-002',
+      model: 'fine_tuned_model',
       chat_log_length: chatLog?.length
     }
   }, async () => {
     try {
-      const feedbackPrompt = `
-        You will be provided with a text transcription based on an interview. The criteria is STAR method. 
-        Provide detailed feedback based on a rubric you will create and deem fit for an interview. 
-        State specifically what the user did incorrectly for each section of the rubric, and provide a mock 
-        answer that is well done. Include suggestions for improvement. Do not send the rubric, just keep it mentally you should not be able to see it. 
-        Return ONLY valid JSON with this exact shape:
-        {
-          "grade": number,
-          "summary": string,
-          "sections": [
-            {
-              "title": string,
-              "content": string
-            }
-          ]
-        }
-        The grade must be an integer from 1 to 10.
-        Do not wrap the JSON in markdown fences.
-
-        Here is the interview transcription:
-        ${JSON.stringify(chatLog)}
-      `;
-
-      const feedbackRequest = {
-        contents: [{ role: 'user', parts: [{ text: feedbackPrompt }] }],
-      };
-
-      // Create span for Gemini API call
-      const geminiSpan = Sentry.startSpan({
-        op: 'ai.gemini_generate',
-        name: 'Gemini Generate Content'
-      }, async () => {
-        return await generativeModel.generateContent(feedbackRequest);
+      const intakeData = intakeResult.rows[0]?.intake || {};
+      const prompt = JSON.stringify({
+        PROMPT: `You are an expert interview coach. Evaluate the candidate strictly using the STAR method: Situation, Task, Action, Result. Use the intake metadata to tailor your evaluation to the target role. Return concise, structured feedback. Score performance from 1 to 10 based primarily on STAR quality, clarity, relevance, ownership, and measurable impact. Return valid JSON only with keys: grade, summary, star, mockAnswer, suggestions.`,
+        INTAKE: intakeData,
+        Transcript: chatLog
       });
 
-      const feedbackResult = await geminiSpan;
-      const detailedFeedback = feedbackResult.response.candidates[0].content.parts[0].text;
+      console.log(prompt);
+      const feedbackResult = await ollama.generate({ model, prompt });
+
+      const detailedFeedback = feedbackResult.response;
       const parsed = JSON.parse(detailedFeedback);
 
       return {
@@ -183,7 +158,8 @@ const evaluateInterview = async (chatLog) => {
       };
     } catch (error) {
       console.error("Error evaluating interview:", error);
-      return { error: "Failed to evaluate interview." };
+      console.error("Error details:", error.message);
+      return { error: "Failed to evaluate interview.", details: error.message };
     }
   });
 
@@ -208,27 +184,12 @@ const endInterview = async (req, res) => {
     }
 
     try {
-      const date = new Date();
-      
-      // Create span for initial database insert
-      const initialDbSpan = Sentry.startSpan({
-        op: 'db.query',
-        name: 'Insert Interview Chat Log'
-      }, async () => {
-        return await db.query(
-          "INSERT INTO QAOfInterview (interview_id, chat, feedback) VALUES ($1, $2, $3) RETURNING *", 
-          [interviewId, JSON.stringify(chatLog), null]
-        );
-      });
-
-      const { rows } = await initialDbSpan;
-
-      // Create span for AI evaluation
+      // Evaluate the interview first
       const evaluationSpan = Sentry.startSpan({
         op: 'ai.evaluation',
         name: 'AI Interview Evaluation'
       }, async () => {
-        return await evaluateInterview(chatLog);
+        return await evaluateInterview(req.user?.id, chatLog, interviewId);
       });
 
       const evaluation = await evaluationSpan;
@@ -239,7 +200,18 @@ const endInterview = async (req, res) => {
 
       const { score, feedback } = evaluation;
 
-      // Create span for score update
+      // Single insert into QAOfInterview with chat and feedback
+      const insertSpan = Sentry.startSpan({
+        op: 'db.query',
+        name: 'Insert Interview QA and Feedback'
+      }, async () => {
+        return await db.query(
+          "INSERT INTO QAOfInterview (interview_id, chat, feedback) VALUES ($1, $2, $3) RETURNING *",
+          [interviewId, JSON.stringify(chatLog), feedback]
+        );
+      });
+
+      // Update interview score for dashboard queries
       const scoreUpdateSpan = Sentry.startSpan({
         op: 'db.query',
         name: 'Update Interview Score'
@@ -250,19 +222,8 @@ const endInterview = async (req, res) => {
         );
       });
 
-      // Create span for feedback update
-      const feedbackUpdateSpan = Sentry.startSpan({
-        op: 'db.query',
-        name: 'Update Interview Feedback'
-      }, async () => {
-        return await db.query(
-          "UPDATE QAOfInterview SET feedback = $1 WHERE interview_id = $2",
-          [feedback, interviewId]
-        );
-      });
-
+      const { rows } = await insertSpan;
       await scoreUpdateSpan;
-      await feedbackUpdateSpan;
 
       return res.status(201).json({
         record: rows[0],

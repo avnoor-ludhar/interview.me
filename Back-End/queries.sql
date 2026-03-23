@@ -1,4 +1,6 @@
-CREATE TABLE user(
+CREATE EXTENSION IF NOT EXISTS citext;
+
+CREATE TABLE users(
     id SERIAL PRIMARY KEY,
     email citext,
     password_hash VARCHAR(512)
@@ -33,3 +35,6 @@ ADD COLUMN feedback TEXT;
 
 ALTER TABLE interviews
 ADD COLUMN interview_date DATE;
+
+ALTER TABLE interviews
+ADD COLUMN intake JSONB;

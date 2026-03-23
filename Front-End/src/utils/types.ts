@@ -52,7 +52,7 @@ type WebSocketMessage = {
 
 type InterviewerType = {name: string, model: string}
 
-type MeetingState = {
+type MeetingState = { //alter this
     fromIntake?: boolean;
     firstName: string;
     lastName: string;
@@ -82,15 +82,25 @@ type ChatLogProps = {interviewer: InterviewerType | undefined,
     handleRecord: () => void
 }
 
-type FeedbackSection = {
-    title: string,
-    content: string
+type StarCategory = {
+    score: number,
+    issues: string[],
+    improvements: string[]
+}
+
+type StarFeedback = {
+    situation: StarCategory,
+    task: StarCategory,
+    action: StarCategory,
+    result: StarCategory
 }
 
 type FeedbackData = {
     grade: number,
     summary: string,
-    sections: FeedbackSection[]
+    star: StarFeedback,
+    mockAnswer: string,
+    suggestions: string[]
 }
 
 type interviewContent = {
@@ -100,7 +110,7 @@ type interviewContent = {
     feedback: string | null
 }
 
-type dataForResults = {
+type dataForResults = { //alter this
     id: number,
     interview_id: number,
     chat: Speaker[],
@@ -113,4 +123,4 @@ type ViewChatLogProps = {
 }
 
 
-export type {ChatLogState, MediaStreamRecorderType, Speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps, AiCircleProps, ChatLogProps, FeedbackSection, FeedbackData, interviewContent, dataForResults, ViewChatLogProps};
+export type {ChatLogState, MediaStreamRecorderType, Speaker, bodyTTS, dataFromGemini, audioDataFromTTS, UseWebSocketHook, audioQueueState, WebSocketMessage, MeetingState, InterviewerType, videoProps, AiCircleProps, ChatLogProps, StarCategory, StarFeedback, FeedbackData, interviewContent, dataForResults, ViewChatLogProps};
