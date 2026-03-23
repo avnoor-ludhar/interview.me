@@ -22,7 +22,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { models } from "@/assets/models";
 import { InterviewerType } from "@/utils/types";
-import api from "@/lib/axios";
 
 function Intake(): JSX.Element {
   const [page, setPage] = useState(1);
@@ -54,19 +53,6 @@ function Intake(): JSX.Element {
     return true;
   };
 
-  const passIntake = async () => {
-    await api.post(`/api/interview/pass/intake`, {
-      intake: {
-        firstName,
-        lastName,
-        jobType,
-        position,
-        companyName,
-        jobDescription,
-      },
-    });
-  };
-
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -74,8 +60,6 @@ function Intake(): JSX.Element {
 
     try {
       setSubmitting(true);
-      await passIntake();
-
       navigate("/meeting", {
         state: {
           firstName,
@@ -89,8 +73,8 @@ function Intake(): JSX.Element {
         },
       });
     } catch (error) {
-      console.error("Error saving intake:", error);
-      setError("Could not save intake. Please try again.");
+      console.error("Error starting interview:", error);
+      setError("Could not continue to the interview. Please try again.");
     } finally {
       setSubmitting(false);
     }

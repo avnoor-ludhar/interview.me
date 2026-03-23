@@ -3,6 +3,7 @@ import db from "../dbConnection.js";
 import { VertexAI } from '@google-cloud/vertexai';
 import { createClient } from "@deepgram/sdk";
 import * as Sentry from '@sentry/node';
+import ollama from 'ollama';
 dotenv.config();
 
 // Initialize Vertex AI and Model
@@ -10,6 +11,11 @@ const vertex_ai = new VertexAI({
   project: 'finetune-446818',
   location: 'us-central1',
 });
+
+//client = ollama.Client()
+//model = 'fine_tuned_model';
+// prompt = {build message wiht intake and chatlog}
+//response = client.generate(model = model, prompt=prompt) //look at docs for more customization, temp etc
 
 const model = 'gemini-1.5-flash-002';
 
@@ -24,29 +30,6 @@ const generativeModel = vertex_ai.preview.getGenerativeModel({
 
 const deepgram = createClient(process.env.DEEPGRAM_APIKEY);
 
-const handleIntake = async (req, res) => {
-  try {
-    const { intake } = req.body;
-
-    if (!intake) {
-      return res.status(400).json({ error: "Missing intake data." });
-    }
-  
-    const result = await db.query(
-        "UPDATE interviews SET intake = $1 WHERE id = (SELECT id FROM interviews WHERE user_id = $2 ORDER BY interview_date DESC LIMIT 1) RETURNING *",
-        [JSON.stringify(intake), req.user.id]
-      );
-    
-    return res.status(201).json({
-      message: "Intake data saved successfully.",
-      data: result.rows[0],
-    });
-  } catch (error) {
-      console.error(error);
-      return res.status(403).json({ error: "Could not insert into database." });
-    }
-}
-
 // Start Interview Function
 const startInterview = async (req, res) => {
   // Create a span for the start interview operation
@@ -55,13 +38,25 @@ const startInterview = async (req, res) => {
     name: 'Start Interview',
     tags: {
       user_id: req.user?.id,
-      interview_type: req.body?.typeofinterview,
-      company: req.body?.company
+      interview_type: req.body?.intake?.jobType ?? req.body?.typeofinterview,
+      company: req.body?.intake?.companyName ?? req.body?.company
     }
   }, async () => {
     const user = req.user;
-    const typeofinterview = req.body?.typeofinterview;
-    const institution = req.body?.company;
+    const intake = req.body?.intake;
+    const typeofinterview = intake?.jobType ?? req.body?.typeofinterview;
+    const institution = intake?.companyName ?? req.body?.company;
+
+    if (
+      !intake?.firstName ||
+      !intake?.lastName ||
+      !intake?.jobType ||
+      !intake?.position ||
+      !intake?.companyName ||
+      !intake?.jobDescription
+    ) {
+      return res.status(400).json({ error: "Missing intake data." });
+    }
 
     try {
       // Create span for database insert
@@ -70,8 +65,8 @@ const startInterview = async (req, res) => {
         name: 'Create Interview Record'
       }, async () => {
         return await db.query(
-          "INSERT INTO interviews (user_id, typeofinterview, institution, interview_date) VALUES ($1, $2, $3, $4) RETURNING *", 
-          [user.id, typeofinterview, institution, new Date()]
+          "INSERT INTO interviews (user_id, typeofinterview, institution, interview_date, intake) VALUES ($1, $2, $3, $4, $5) RETURNING *", 
+          [user.id, typeofinterview, institution, new Date(), JSON.stringify(intake)]
         );
       });
 
@@ -150,7 +145,12 @@ const textToSpeechDeepgram = async (req, res) => {
 };
 
 // Function to evaluate interview
-const evaluateInterview = async (chatLog) => {
+const evaluateInterview = async (userid, chatLog) => {
+  const model = 'fine_tuned_model';
+  const intake = await db.query(
+        "SELECT intake FROM interviews WHERE id = (SELECT id FROM interviews WHERE user_id = $1 ORDER BY interview_date DESC LIMIT 1) RETURNING *",
+        [userid]
+      );
   // Create a span for the AI evaluation
   const evaluationSpan = Sentry.startSpan({
     op: 'ai.gemini_evaluation',
@@ -161,31 +161,21 @@ const evaluateInterview = async (chatLog) => {
     }
   }, async () => {
     try {
-      const feedbackPrompt = `
-        You will be provided with a text transcription based on an interview. The criteria is STAR method. 
-        Provide detailed feedback based on a rubric you will create and deem fit for an interview. 
-        State specifically what the user did incorrectly for each section of the rubric, and provide a mock 
-        answer that is well done. Include suggestions for improvement. Do not send the rubric, just keep it mentally you should not be able to see it. 
-        Please also provide the 1-10 score in a large bold font, it should be the first thing you see, and large. Be more brief, and when you write the score write Grade: X/10. 
-        Don't write the word feedback, just write the feedback
+      const prompt = [
+      {
+        "role": "system",
+        "content": "You are an expert interview coach. Evaluate the candidate strictly using the STAR method: Situation, Task, Action, Result. Use the intake metadata to tailor your evaluation to the target role. Return concise, structured feedback. Score performance from 1 to 10 based primarily on STAR quality, clarity, relevance, ownership, and measurable impact. Return valid JSON only with keys: grade, summary, star, mockAnswer, suggestions."
+      },
+      {intake},
+      {chatLog}
+    ]; //so here we passed the prompt with intake and the chat log, and we want it to return a score and detailed feedback. We will then store the detailed feedback in the database and show it to the user, and we will show the score to the user and also store it in the database.
 
-        Here is the interview transcription:
-        ${JSON.stringify(chatLog)} 
-      `; //so here we passed the prompt and the chat log, and we want it to return a score and detailed feedback. We will then store the detailed feedback in the database and show it to the user, and we will show the score to the user and also store it in the database.
+      // const feedbackRequest = {
+      //   contents: [{ role: 'user', parts: [{ text: Prompt }] }],
+      // };
 
-      const feedbackRequest = {
-        contents: [{ role: 'user', parts: [{ text: feedbackPrompt }] }],
-      };
+      const feedbackResult = await ollama.generate({ model, prompt });
 
-      // Create span for Gemini API call
-      const geminiSpan = Sentry.startSpan({
-        op: 'ai.gemini_generate',
-        name: 'Gemini Generate Content'
-      }, async () => {
-        return await generativeModel.generateContent(feedbackRequest);
-      });
-
-      const feedbackResult = await geminiSpan;
       const detailedFeedback = feedbackResult.response.candidates[0].content.parts[0].text;
 
       // Extract score directly from the feedback
@@ -209,6 +199,66 @@ const evaluateInterview = async (chatLog) => {
 
   return await evaluationSpan;
 };
+
+// const evaluateInterview = async (chatLog) => {
+//   // Create a span for the AI evaluation
+//   const evaluationSpan = Sentry.startSpan({
+//     op: 'ai.gemini_evaluation',
+//     name: 'Gemini Interview Evaluation',
+//     tags: {
+//       model: 'gemini-1.5-flash-002',
+//       chat_log_length: chatLog?.length
+//     }
+//   }, async () => {
+//     try {
+//       const feedbackPrompt = `
+//         You will be provided with a text transcription based on an interview. The criteria is STAR method. 
+//         Provide detailed feedback based on a rubric you will create and deem fit for an interview. 
+//         State specifically what the user did incorrectly for each section of the rubric, and provide a mock 
+//         answer that is well done. Include suggestions for improvement. Do not send the rubric, just keep it mentally you should not be able to see it. 
+//         Please also provide the 1-10 score in a large bold font, it should be the first thing you see, and large. Be more brief, and when you write the score write Grade: X/10. 
+//         Don't write the word feedback, just write the feedback
+
+//         Here is the interview transcription:
+//         ${JSON.stringify(chatLog)} 
+//       `; //so here we passed the prompt and the chat log, and we want it to return a score and detailed feedback. We will then store the detailed feedback in the database and show it to the user, and we will show the score to the user and also store it in the database.
+
+//       const feedbackRequest = {
+//         contents: [{ role: 'user', parts: [{ text: feedbackPrompt }] }],
+//       };
+
+//       // Create span for Gemini API call
+//       const geminiSpan = Sentry.startSpan({
+//         op: 'ai.gemini_generate',
+//         name: 'Gemini Generate Content'
+//       }, async () => {
+//         return await generativeModel.generateContent(feedbackRequest);
+//       });
+
+//       const feedbackResult = await geminiSpan;
+//       const detailedFeedback = feedbackResult.response.candidates[0].content.parts[0].text;
+
+//       // Extract score directly from the feedback
+//       const scoreMatch = detailedFeedback.match(/Grade:\s*(\d{1,2})/);
+//       const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
+
+//       if (score === null || isNaN(score)) {
+//         console.error("Could not extract score.");
+//         return { error: "Failed to extract score." };
+//       }
+
+//       return {
+//         score: score,
+//         feedback: detailedFeedback,
+//       };
+//     } catch (error) {
+//       console.error("Error evaluating interview:", error);
+//       return { error: "Failed to evaluate interview." };
+//     }
+//   });
+
+//   return await evaluationSpan;
+// };
 
 // End Interview Function
 const endInterview = async (req, res) => {
@@ -248,7 +298,7 @@ const endInterview = async (req, res) => {
         op: 'ai.evaluation',
         name: 'AI Interview Evaluation'
       }, async () => {
-        return await evaluateInterview(chatLog);
+        return await evaluateInterview(req.user?.id, chatLog);
       });
 
       const evaluation = await evaluationSpan;
@@ -333,4 +383,4 @@ const getRecentInterview = async (req, res) => {
 };
 
 
-export { handleIntake, startInterview, endInterview, textToSpeechDeepgram, getFeedback, getRecentInterview};
+export { startInterview, endInterview, textToSpeechDeepgram, getFeedback, getRecentInterview};

@@ -191,7 +191,19 @@ wss.on('connection', (ws, req) => {
                     //starts connection
                     try{
                         const { data } = await axios.post("http://localhost:8080/api/interview/startInterview", 
-                            {company: parsedMessage.companyName, typeofinterview: parsedMessage.jobType},
+                            {
+                                company: parsedMessage.companyName,
+                                typeofinterview: parsedMessage.jobType,
+                                intake: {
+                                    firstName: parsedMessage.firstName,
+                                    lastName: parsedMessage.lastName,
+                                    jobType: parsedMessage.jobType,
+                                    position: parsedMessage.position,
+                                    companyName: parsedMessage.companyName,
+                                    jobDescription: parsedMessage.jobDescription,
+                                    interviewerName: parsedMessage.interviewerName
+                                }
+                            },
                             {
                             headers: {
                                 Authorization: `Bearer ${accessToken}` // Attach the JWT here
