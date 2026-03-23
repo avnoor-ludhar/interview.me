@@ -160,3 +160,5 @@ dist
 node_modules/
 
 .env
+
+qwen3-4b-instruct-2507.Q4_K_M.gguf
